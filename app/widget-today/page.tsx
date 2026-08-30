@@ -13,9 +13,12 @@ export default function WidgetTodayPage() {
   const today = new Date();
 
   const habitStatus = habits.map((habit) => {
-    const isScheduled = isScheduledOn(habit, today.getDay());
-    const logKey = `${habit.id}:${format(today, "yyyy-MM-dd")}`;
-    const isCompleted = logs.some((log) => log.id === logKey && log.completed);
+    const isScheduled = isScheduledOn(habit, today);
+    const todayStr = format(today, "yyyy-MM-dd");
+    const isCompleted = logs.some(
+      (log) =>
+        log.habitId === habit.id && log.date === todayStr && log.completed,
+    );
     return { habit, isScheduled, isCompleted };
   });
 
