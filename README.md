@@ -14,18 +14,6 @@ npm run dev
 Open `http://localhost:3000`. That's it — no `.env` file, no second
 terminal, no server to start.
 
-## Deploy it (free, one project)
-
-**Vercel** (recommended, since this is a Next.js app):
-1. Push this folder to a GitHub repo.
-2. [vercel.com](https://vercel.com) → **New Project** → import the repo.
-3. Leave every setting as default (Vercel auto-detects Next.js) → **Deploy**.
-
-That's the whole deployment. No root-directory setting, no environment
-variables, no build command to fix — because there's only one app here.
-
-**Netlify** works the same way: import the repo, leave defaults, deploy.
-
 ## How the data model works
 
 - Everything lives under one `localStorage` key. Opening the app reads it;
