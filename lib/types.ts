@@ -19,6 +19,7 @@ export interface Habit {
   targetUnit: string | null;
   archived: boolean;
   createdAt: string;
+  order: number; // for drag-and-drop reordering
 }
 
 export interface HabitLog {

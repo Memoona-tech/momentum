@@ -44,8 +44,12 @@ export function loadData(): AppData {
     }
     const parsed = JSON.parse(raw) as AppData;
     // Backfill in case fields were added after a user's data was created.
+    const habits = (parsed.habits ?? []).map((h, idx) => ({
+      ...h,
+      order: h.order ?? idx,
+    }));
     return {
-      habits: parsed.habits ?? [],
+      habits,
       categories: parsed.categories ?? STARTER_CATEGORIES,
       logs: parsed.logs ?? [],
       settings: {

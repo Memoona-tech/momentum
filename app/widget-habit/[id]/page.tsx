@@ -80,12 +80,11 @@ export default function WidgetHabitPage() {
               key={idx}
               className="aspect-square rounded-sm border border-void-700 flex items-center justify-center text-[9px]"
               style={{
-                backgroundColor:
-                  entry.status === "completed"
-                    ? category?.color
-                    : entry.status === "scheduled"
-                      ? `${category?.color}33`
-                      : "transparent",
+                backgroundColor: entry.completed
+                  ? category?.color
+                  : entry.scheduled
+                    ? `${category?.color}33`
+                    : "transparent",
               }}
               title={entry.date}
             />

@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
 import { AppData, Category, Habit, HabitLog, Settings } from "./types";
 import { loadData, saveData, newId } from "./storage";
 
@@ -13,10 +20,17 @@ interface DataContextValue {
   createHabit: (h: Partial<Habit>) => void;
   updateHabit: (id: string, h: Partial<Habit>) => void;
   deleteHabit: (id: string) => void;
+  reorderHabits: (reorderedHabits: Habit[]) => void;
   createCategory: (c: Partial<Category>) => void;
   updateCategory: (id: string, c: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
-  setLog: (habitId: string, date: string, completed: boolean, value?: number | null, note?: string | null) => void;
+  setLog: (
+    habitId: string,
+    date: string,
+    completed: boolean,
+    value?: number | null,
+    note?: string | null,
+  ) => void;
   unsetLog: (habitId: string, date: string) => void;
   updateSettings: (s: Partial<Settings>) => void;
   replaceAll: (data: AppData) => void;
@@ -55,6 +69,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       targetUnit: h.targetUnit ?? null,
       archived: false,
       createdAt: new Date().toISOString(),
+      order: data!.habits.length,
     };
     persist({ ...data!, habits: [habit, ...data!.habits] });
   }
@@ -74,6 +89,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  function reorderHabits(reorderedHabits: Habit[]) {
+    persist({
+      ...data!,
+      habits: reorderedHabits,
+    });
+  }
+
   function createCategory(c: Partial<Category>) {
     const category: Category = {
       id: newId(),
@@ -87,7 +109,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   function updateCategory(id: string, c: Partial<Category>) {
     persist({
       ...data!,
-      categories: data!.categories.map((x) => (x.id === id ? { ...x, ...c } : x)),
+      categories: data!.categories.map((x) =>
+        x.id === id ? { ...x, ...c } : x,
+      ),
     });
   }
 
@@ -95,12 +119,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     persist({
       ...data!,
       categories: data!.categories.filter((x) => x.id !== id),
-      habits: data!.habits.map((h) => (h.categoryId === id ? { ...h, categoryId: null } : h)),
+      habits: data!.habits.map((h) =>
+        h.categoryId === id ? { ...h, categoryId: null } : h,
+      ),
     });
   }
 
-  function setLog(habitId: string, date: string, completed: boolean, value?: number | null, note?: string | null) {
-    const existing = data!.logs.find((l) => l.habitId === habitId && l.date === date);
+  function setLog(
+    habitId: string,
+    date: string,
+    completed: boolean,
+    value?: number | null,
+    note?: string | null,
+  ) {
+    const existing = data!.logs.find(
+      (l) => l.habitId === habitId && l.date === date,
+    );
     const entry: HabitLog = {
       habitId,
       date,
@@ -110,13 +144,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
       loggedAt: new Date().toISOString(),
     };
     const logs = existing
-      ? data!.logs.map((l) => (l.habitId === habitId && l.date === date ? entry : l))
+      ? data!.logs.map((l) =>
+          l.habitId === habitId && l.date === date ? entry : l,
+        )
       : [...data!.logs, entry];
     persist({ ...data!, logs });
   }
 
   function unsetLog(habitId: string, date: string) {
-    persist({ ...data!, logs: data!.logs.filter((l) => !(l.habitId === habitId && l.date === date)) });
+    persist({
+      ...data!,
+      logs: data!.logs.filter(
+        (l) => !(l.habitId === habitId && l.date === date),
+      ),
+    });
   }
 
   function updateSettings(s: Partial<Settings>) {
@@ -131,6 +172,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     <DataContext.Provider
       value={{
         ready: true,
+        reorderHabits,
         habits: data.habits,
         categories: data.categories,
         logs: data.logs,
