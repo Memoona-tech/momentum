@@ -1,10 +1,18 @@
 import { format, parseISO, subDays } from "date-fns";
 import { Habit, HabitLog } from "./types";
 
+export interface ContributionCell {
+  date: string;
+  scheduled: boolean;
+  completed: boolean;
+}
+
 export function isScheduledOn(habit: Habit, date: Date): boolean {
   if (habit.scheduleType === "daily") return true;
-  if (habit.scheduleType === "weekly") return habit.scheduleDays.includes(date.getDay());
-  if (habit.scheduleType === "monthly") return habit.scheduleDays.includes(date.getDate());
+  if (habit.scheduleType === "weekly")
+    return habit.scheduleDays.includes(date.getDay());
+  if (habit.scheduleType === "monthly")
+    return habit.scheduleDays.includes(date.getDate());
   return false;
 }
 
@@ -19,7 +27,9 @@ export function dateStr(d: Date): string {
 // Current streak: consecutive scheduled days, walking backwards from today,
 // with a completed log. Today not being done yet doesn't break it.
 export function currentStreak(habit: Habit, logs: HabitLog[]): number {
-  const logsByDate = new Map(logs.filter((l) => l.habitId === habit.id).map((l) => [l.date, l]));
+  const logsByDate = new Map(
+    logs.filter((l) => l.habitId === habit.id).map((l) => [l.date, l]),
+  );
   let streak = 0;
   let cursor = new Date();
 
@@ -43,7 +53,9 @@ export function currentStreak(habit: Habit, logs: HabitLog[]): number {
 
 export function longestStreak(habit: Habit, logs: HabitLog[]): number {
   const logsByDate = new Map(
-    logs.filter((l) => l.habitId === habit.id && l.completed).map((l) => [l.date, true])
+    logs
+      .filter((l) => l.habitId === habit.id && l.completed)
+      .map((l) => [l.date, true]),
   );
   if (logsByDate.size === 0) return 0;
 
@@ -58,6 +70,32 @@ export function longestStreak(habit: Habit, logs: HabitLog[]): number {
     longest = Math.max(longest, run);
   }
   return longest;
+}
+
+export function buildContributionGrid(
+  habit: Habit,
+  logs: HabitLog[],
+  days = 28,
+): ContributionCell[] {
+  const entries = new Map(
+    logs.filter((l) => l.habitId === habit.id).map((l) => [l.date, l]),
+  );
+  const cells: ContributionCell[] = [];
+  const today = new Date();
+
+  for (let i = 0; i < days; i++) {
+    const date = subDays(today, days - 1 - i);
+    const dateKey = dateStr(date);
+    const scheduled = isScheduledOn(habit, date);
+    const completed = scheduled && Boolean(entries.get(dateKey)?.completed);
+    cells.push({
+      date: dateKey,
+      scheduled,
+      completed,
+    });
+  }
+
+  return cells;
 }
 
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

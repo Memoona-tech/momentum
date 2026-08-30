@@ -30,11 +30,18 @@ export interface HabitLog {
   loggedAt: string;
 }
 
+export interface ProfileData {
+  name: string;
+  avatarUrl: string | null;
+  dailyNote: string;
+}
+
 export interface Settings {
   theme: "dark" | "light";
   notificationsEnabled: boolean;
   reminderLeadMinutes: number;
   passcodeHash: string | null;
+  profile: ProfileData;
 }
 
 export interface AppData {

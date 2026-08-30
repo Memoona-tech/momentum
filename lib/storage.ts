@@ -24,6 +24,11 @@ function defaultData(): AppData {
       notificationsEnabled: true,
       reminderLeadMinutes: 30,
       passcodeHash: null,
+      profile: {
+        name: "Momentum User",
+        avatarUrl: null,
+        dailyNote: "",
+      },
     },
   };
 }
@@ -48,6 +53,11 @@ export function loadData(): AppData {
         notificationsEnabled: parsed.settings?.notificationsEnabled ?? true,
         reminderLeadMinutes: parsed.settings?.reminderLeadMinutes ?? 30,
         passcodeHash: parsed.settings?.passcodeHash ?? null,
+        profile: {
+          name: parsed.settings?.profile?.name ?? "Momentum User",
+          avatarUrl: parsed.settings?.profile?.avatarUrl ?? null,
+          dailyNote: parsed.settings?.profile?.dailyNote ?? "",
+        },
       },
     };
   } catch {

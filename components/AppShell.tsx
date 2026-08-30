@@ -3,11 +3,19 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, LineChart, FileText, Settings as SettingsIcon, Gem } from "lucide-react";
+import {
+  LayoutGrid,
+  LineChart,
+  FileText,
+  Settings as SettingsIcon,
+  Gem,
+  Flame,
+} from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Today", icon: LayoutGrid },
   { href: "/habits", label: "Habits", icon: Gem },
+  { href: "/streaks", label: "Streaks", icon: Flame },
   { href: "/analytics", label: "Analytics", icon: LineChart },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
@@ -23,7 +31,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 rounded-full border border-gold-500/50 flex items-center justify-center">
             <Gem className="text-gold-400" size={15} />
           </div>
-          <span className="font-display text-lg tracking-wide text-parchment">Momentum</span>
+          <span className="font-display text-lg tracking-wide text-parchment">
+            Momentum
+          </span>
         </div>
         <nav className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
@@ -33,7 +43,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  active ? "bg-gold-500/10 text-gold-300" : "text-void-400 hover:text-parchment hover:bg-void-800"
+                  active
+                    ? "bg-gold-500/10 text-gold-300"
+                    : "text-void-400 hover:text-parchment hover:bg-void-800"
                 }`}
               >
                 <item.icon size={17} strokeWidth={1.75} />
