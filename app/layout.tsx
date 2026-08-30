@@ -26,13 +26,27 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Momentum — Habit Tracker",
-  description: "A quiet, private habit tracker. Your data stays on your device.",
+  description:
+    "A quiet, private habit tracker. Your data stays on your device.",
   icons: "/favicon.ico",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Momentum",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <body>
         <DataProvider>
           <PasscodeGate>

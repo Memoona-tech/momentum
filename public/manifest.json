@@ -1,0 +1,20 @@
+{
+  "name": "Momentum — Habit Tracker",
+  "short_name": "Momentum",
+  "description": "A quiet, private habit tracker. Your data stays on your device.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0805",
+  "theme_color": "#c9a44c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "lifestyle"]
+}

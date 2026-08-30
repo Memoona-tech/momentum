@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon,
   Gem,
   Flame,
+  SquareStack,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/habits", label: "Habits", icon: Gem },
   { href: "/streaks", label: "Streaks", icon: Flame },
   { href: "/analytics", label: "Analytics", icon: LineChart },
+  { href: "/widgets", label: "Widgets", icon: SquareStack },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
