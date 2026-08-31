@@ -31,7 +31,6 @@ function defaultData(): AppData {
         dailyNote: "",
       },
     },
-    templates: [],
   };
 }
 
@@ -76,7 +75,6 @@ export function loadData(): AppData {
           dailyNote: parsed.settings?.profile?.dailyNote ?? "",
         },
       },
-      templates: parsed.templates ?? [],
     };
   } catch {
     return defaultData();

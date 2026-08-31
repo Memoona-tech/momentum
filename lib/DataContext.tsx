@@ -8,14 +8,7 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import {
-  AppData,
-  Category,
-  Habit,
-  HabitLog,
-  HabitTemplate,
-  Settings,
-} from "./types";
+import { AppData, Category, Habit, HabitLog, Settings } from "./types";
 import { loadData, saveData, newId } from "./storage";
 import { getUnlockedMilestones } from "./schedule";
 
@@ -25,7 +18,6 @@ interface DataContextValue {
   categories: Category[];
   logs: HabitLog[];
   settings: Settings;
-  templates: HabitTemplate[];
   createHabit: (h: Partial<Habit>) => boolean;
   updateHabit: (id: string, h: Partial<Habit>) => boolean;
   deleteHabit: (id: string) => void;
@@ -43,10 +35,6 @@ interface DataContextValue {
   ) => void;
   unsetLog: (habitId: string, date: string) => void;
   updateSettings: (s: Partial<Settings>) => void;
-  listTemplates: () => HabitTemplate[];
-  createTemplate: (template: Omit<HabitTemplate, "id" | "createdAt">) => void;
-  useTemplate: (templateId: string) => void;
-  deleteTemplate: (templateId: string) => void;
   replaceAll: (data: AppData) => void;
 }
 
@@ -240,61 +228,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     persist({ ...data!, settings: { ...data!.settings, ...s } });
   }
 
-  function listTemplates() {
-    return data!.templates ?? [];
-  }
-
-  function createTemplate(template: Omit<HabitTemplate, "id" | "createdAt">) {
-    const nextTemplate: HabitTemplate = {
-      ...template,
-      habits: template.habits ?? [],
-      id: newId(),
-      createdAt: new Date().toISOString(),
-    };
-    persist({
-      ...data!,
-      templates: [...(data!.templates ?? []), nextTemplate],
-    });
-  }
-
-  function useTemplate(templateId: string) {
-    const template = (data!.templates ?? []).find((t) => t.id === templateId);
-    if (!template) return;
-
-    const createdAt = new Date().toISOString();
-    const nextHabits = template.habits
-      .filter((item) => !isHabitNameTaken(item.name))
-      .map((item, index) => {
-        const habitId = newId();
-        return {
-          id: habitId,
-          name: item.name,
-          description: item.description,
-          categoryId: item.categoryId,
-          scheduleType: item.scheduleType,
-          scheduleDays: item.scheduleDays,
-          targetTime: item.targetTime,
-          targetValue: item.targetValue,
-          targetUnit: item.targetUnit,
-          archived: false,
-          createdAt,
-          order: data!.habits.length + index,
-          milestones: [7, 30, 100],
-          achievedMilestones: [],
-        } satisfies Habit;
-      });
-
-    if (nextHabits.length === 0) return;
-    persist({ ...data!, habits: [...nextHabits, ...data!.habits] });
-  }
-
-  function deleteTemplate(templateId: string) {
-    persist({
-      ...data!,
-      templates: (data!.templates ?? []).filter((t) => t.id !== templateId),
-    });
-  }
-
   function replaceAll(next: AppData) {
     persist(next);
   }
@@ -308,7 +241,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         categories: data.categories,
         logs: data.logs,
         settings: data.settings,
-        templates: data.templates ?? [],
         createHabit,
         updateHabit,
         deleteHabit,
@@ -318,10 +250,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setLog,
         unsetLog,
         updateSettings,
-        listTemplates,
-        createTemplate,
-        useTemplate,
-        deleteTemplate,
         replaceAll,
       }}
     >

@@ -34,25 +34,6 @@ export interface HabitLog {
   loggedAt: string;
 }
 
-export interface HabitTemplateItem {
-  name: string;
-  description: string;
-  categoryId: string | null;
-  scheduleType: ScheduleType;
-  scheduleDays: number[];
-  targetTime: string | null;
-  targetValue: number | null;
-  targetUnit: string | null;
-}
-
-export interface HabitTemplate {
-  id: string;
-  name: string;
-  description: string;
-  habits: HabitTemplateItem[];
-  createdAt: string;
-}
-
 export interface ProfileData {
   name: string;
   avatarUrl: string | null;
@@ -73,5 +54,4 @@ export interface AppData {
   categories: Category[];
   logs: HabitLog[];
   settings: Settings;
-  templates?: HabitTemplate[];
 }

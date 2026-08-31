@@ -12,13 +12,11 @@ import {
 } from "@/lib/schedule";
 import HabitCard from "@/components/HabitCard";
 import HabitFormModal from "@/components/HabitFormModal";
-import HabitTemplateModal from "@/components/HabitTemplateModal";
 import ProgressDial from "@/components/ProgressDial";
 
 export default function DashboardPage() {
   const { habits, categories, logs, settings, reorderHabits } = useData();
   const [showForm, setShowForm] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
   const [query, setQuery] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -180,12 +178,6 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowTemplates(true)}
-            className="flex items-center gap-1.5 bg-void-800 border border-void-600 hover:border-void-400 text-parchment text-sm font-medium rounded-lg px-3 py-2.5 transition-colors"
-          >
-            Templates
-          </button>
-          <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-3.5 py-2.5 transition-colors"
           >
@@ -320,9 +312,6 @@ export default function DashboardPage() {
       )}
 
       {showForm && <HabitFormModal onClose={() => setShowForm(false)} />}
-      {showTemplates && (
-        <HabitTemplateModal onClose={() => setShowTemplates(false)} />
-      )}
     </div>
   );
 }

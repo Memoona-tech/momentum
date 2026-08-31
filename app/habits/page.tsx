@@ -15,7 +15,6 @@ import { useData } from "@/lib/DataContext";
 import { Habit } from "@/lib/types";
 import CategoryTag from "@/components/CategoryTag";
 import HabitFormModal from "@/components/HabitFormModal";
-import HabitTemplateModal from "@/components/HabitTemplateModal";
 import { WEEKDAY_LABELS } from "@/lib/schedule";
 
 function nth(n: number) {
@@ -41,7 +40,6 @@ function scheduleLabel(habit: Habit): string {
 export default function HabitsPage() {
   const { habits, categories, updateHabit, deleteHabit } = useData();
   const [showForm, setShowForm] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
   const [editing, setEditing] = useState<Habit | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [query, setQuery] = useState("");
@@ -70,12 +68,6 @@ export default function HabitsPage() {
       <div className="flex items-start justify-between mb-1">
         <h1 className="font-display text-3xl text-parchment">Habits</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowTemplates(true)}
-            className="flex items-center gap-1.5 bg-void-800 border border-void-600 hover:border-void-400 text-parchment text-sm font-medium rounded-lg px-3 py-2.5 transition-colors"
-          >
-            Templates
-          </button>
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-3.5 py-2.5 transition-colors"
@@ -192,9 +184,6 @@ export default function HabitsPage() {
       </div>
 
       {showForm && <HabitFormModal onClose={() => setShowForm(false)} />}
-      {showTemplates && (
-        <HabitTemplateModal onClose={() => setShowTemplates(false)} />
-      )}
       {editing && (
         <HabitFormModal habit={editing} onClose={() => setEditing(null)} />
       )}
