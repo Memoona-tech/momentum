@@ -1,58 +1,155 @@
 # Momentum — Habit Tracker
 
-A single Next.js app — no separate backend, no database to configure, no
-hosting bill. Everything is stored in your browser's `localStorage`; you
-export/import a JSON backup to move between devices or browsers.
+Momentum is a local-first habit tracker built with Next.js. It is designed to feel like a personal command dashboard: daily check-ins, progress streaks, milestone badges, notes, reports, and lightweight customization without needing a backend or account system.
 
-## Run it locally
+Everything is stored in the browser using `localStorage`, so the app works instantly without a database or server setup. You can export your data as JSON and bring it to another device or browser whenever you want.
+
+## Why Momentum
+
+- Track daily, weekly, and monthly habits
+- See important streak and milestone progress at a glance
+- Keep notes tied to specific habit logs
+- Review completion trends with analytics and weekly/monthly reports
+- Install the app as a PWA and use the widget-style views for quick glance access
+- Keep local-only privacy with passcode protection and browser-side storage
+
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. That's it — no `.env` file, no second
-terminal, no server to start.
+Then open:
 
-## How the data model works
+```text
+http://localhost:3000
+```
 
-- Everything lives under one `localStorage` key. Opening the app reads it;
-  every change (checking off a habit, editing settings) writes it back
-  immediately.
-- **This means your data is per-browser, per-device.** Clearing your
-  browser's site data deletes it. Use **Reports → Export JSON** regularly
-  as a backup, and **Settings → Import JSON backup** to restore it (e.g.
-  on a new device — export on the old one, import on the new one).
-- There's no real user account system, because there's no server to hold
-  one. The **Settings → Passcode lock** is a local PIN check — it hides
-  the app from someone picking up your device, but it isn't the same
-  guarantee as a server-side login. Don't rely on it for anything
-  sensitive.
+No `.env` file is required. There is no backend, auth service, or database to configure.
 
-## Features
+## Core features
 
-- **Habits** — CRUD, category (color + icon), daily/weekly/monthly
-  schedule, a target time, and an optional numeric target.
-- **Today** — a circular completion dial, checkbox to complete/uncheck,
-  and overdue flags (plus an optional browser notification, if you grant
-  permission — reminders only fire while the tab is open, since there's
-  no background server to send them).
-- **Analytics** — week/month/year completion trend, per-habit completion
-  rate, best-period comparison, streak counters.
-- **Reports** — auto-generated text insights, a downloadable PDF report,
-  and JSON/CSV export.
-- **Settings** — categories, notification lead time, passcode lock,
-  restore from a JSON backup.
+### Habit planning and tracking
 
-## Design
+- Create, edit, archive, and reorder habits
+- Assign categories with color + icon metadata
+- Choose daily, weekly, or monthly schedules
+- Add target times and optional numeric tracking values
+- Support optional units such as minutes, reps, pages, or other measurable progress
+- Use milestone targets like 7, 30, and 100-day streak thresholds
 
-"Vault" theme: matte black surfaces, a brass-gold accent, deep emerald for
-completion states, a serif display face (Fraunces) for headings against a
-plain sans (Inter) for UI text, and a monospace face (JetBrains Mono) for
-streaks and stats — like a data readout on a dark instrument panel.
+### Today dashboard
+
+- Quickly review the habits scheduled for today
+- Mark habits complete or incomplete from the main dashboard
+- See overall streak and best streak summaries
+- Filter today’s habits by search
+- Drag-and-drop habit ordering
+- Receive browser notification reminders when a habit is due or near target time
+
+### Streaks and achievements
+
+- Track current streak and longest streak per habit
+- View unlockable milestone achievements
+- Earn theme unlocks as streak milestones are reached
+- Visual progress bars for next milestone targets
+
+### Notes and personal context
+
+- Add daily notes to habit logs
+- Edit or delete notes later from the Notes screen
+- Keep reflections tied to the same date-based habit records as the rest of the data
+- Add a personal daily note shown in widget-style previews
+
+### Analytics and reporting
+
+- Review completion trends across recent periods
+- Compare current-period completion rate against the previous period
+- See per-habit completion breakdowns
+- Export summary reports as PDF
+- Export raw data as JSON or CSV
+- Use reports to compare performance and identify weak spots
+
+### Widgets and installable app
+
+- Access widget-style pages for Today, Streaks, and per-habit summaries
+- Install Momentum as a PWA on supported devices
+- Use the app from the home screen like a lightweight installed tool
+
+### Settings and personalization
+
+- Update profile name and profile image
+- Add a daily note to show in widget views
+- Toggle smart reminder notifications and adjust lead time
+- Set a local passcode lock for device-level protection
+- Create custom categories
+- Unlock alternate visual themes as milestones are earned
+- Import/export full app data as JSON backups
+
+## Data model and privacy
+
+Momentum is intentionally local-first:
+
+- All habit data, logs, settings, profiles, categories, and milestone progress live in the browser
+- App state is written to `localStorage` immediately after updates
+- There is no server-side user account or cloud sync backend
+- Passcodes are local-only protection on the device, not a remote authentication system
+
+This means:
+
+- Your data is saved per browser and per device
+- Clearing browser storage removes the data
+- You should keep backups using the export flow in Settings or Reports
+- You can restore a full backup by importing the JSON file later
+
+## Backup and restore workflow
+
+Use the export/import flow for safe portability:
+
+1. Open Reports or Settings
+2. Export JSON or copy the sync payload
+3. Import that file on another device or browser
+4. Restore the full app state including habits, logs, categories, notifications, and passcode hash
+
+## Project structure
+
+```text
+app/
+  analytics/
+  habits/
+  notes/
+  reports/
+  settings/
+  streaks/
+  widgets/
+components/
+lib/
+public/
+```
 
 ## Tech stack
 
-Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS, Recharts,
-date-fns, jsPDF, lucide-react. No backend framework, no database, no auth
-library — all state is client-side.
+- Next.js 15
+- React 18
+- TypeScript
+- Tailwind CSS
+- date-fns
+- jsPDF
+- lucide-react
+
+## License
+
+Copyright (c) 2026 Memoona
+GitHub: https://github.com/Memoona-tech
+Email: memoona.se@gmail.com
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+You are free to use, modify, and distribute this project as long as the copyright notice and permission notice are included in copies or substantial portions of the software.
+
+## Notes
+
+Momentum is built as a self-contained front-end app. It intentionally avoids a backend so it stays simple, fast, and easy to run without infrastructure.
+
+If you want a more opinionated setup, you can still add backend sync or cloud storage later, but the current version is designed to stay local, private, and fully browser-driven.
