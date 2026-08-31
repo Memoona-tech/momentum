@@ -16,11 +16,19 @@ export default function CompleteHabitModal({
 }) {
   const { setLog } = useData();
   const [value, setValue] = useState("");
+  const [durationMinutes, setDurationMinutes] = useState("");
   const [note, setNote] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLog(habit.id, date, true, value ? Number(value) : null, note || null);
+    setLog(
+      habit.id,
+      date,
+      true,
+      value ? Number(value) : null,
+      note || null,
+      durationMinutes ? Number(durationMinutes) : null,
+    );
     onClose();
   }
 
@@ -47,7 +55,22 @@ export default function CompleteHabitModal({
           </div>
         )}
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">Note (optional)</label>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Time spent (minutes)
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={durationMinutes}
+            onChange={(e) => setDurationMinutes(e.target.value)}
+            placeholder="45"
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Note (optional)
+          </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}

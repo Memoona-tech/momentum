@@ -30,6 +30,7 @@ function defaultData(): AppData {
         dailyNote: "",
       },
     },
+    templates: [],
   };
 }
 
@@ -47,11 +48,19 @@ export function loadData(): AppData {
     const habits = (parsed.habits ?? []).map((h, idx) => ({
       ...h,
       order: h.order ?? idx,
+      milestones: h.milestones ?? [7, 30, 100],
+      achievedMilestones: h.achievedMilestones ?? [],
+    }));
+    const logs = (parsed.logs ?? []).map((log) => ({
+      ...log,
+      value: log.value ?? null,
+      durationMinutes: log.durationMinutes ?? null,
+      note: log.note ?? null,
     }));
     return {
       habits,
       categories: parsed.categories ?? STARTER_CATEGORIES,
-      logs: parsed.logs ?? [],
+      logs,
       settings: {
         theme: parsed.settings?.theme ?? "dark",
         notificationsEnabled: parsed.settings?.notificationsEnabled ?? true,
@@ -63,6 +72,7 @@ export function loadData(): AppData {
           dailyNote: parsed.settings?.profile?.dailyNote ?? "",
         },
       },
+      templates: parsed.templates ?? [],
     };
   } catch {
     return defaultData();

@@ -8,20 +8,36 @@ import { WEEKDAY_LABELS } from "@/lib/schedule";
 
 const MONTH_DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
-export default function HabitFormModal({ habit, onClose }: { habit?: Habit | null; onClose: () => void }) {
+export default function HabitFormModal({
+  habit,
+  onClose,
+}: {
+  habit?: Habit | null;
+  onClose: () => void;
+}) {
   const { categories, createHabit, updateHabit } = useData();
   const [name, setName] = useState(habit?.name ?? "");
   const [description, setDescription] = useState(habit?.description ?? "");
-  const [categoryId, setCategoryId] = useState(habit?.categoryId ?? categories[0]?.id ?? "");
-  const [scheduleType, setScheduleType] = useState<ScheduleType>(habit?.scheduleType ?? "daily");
-  const [scheduleDays, setScheduleDays] = useState<number[]>(habit?.scheduleDays ?? []);
+  const [categoryId, setCategoryId] = useState(
+    habit?.categoryId ?? categories[0]?.id ?? "",
+  );
+  const [scheduleType, setScheduleType] = useState<ScheduleType>(
+    habit?.scheduleType ?? "daily",
+  );
+  const [scheduleDays, setScheduleDays] = useState<number[]>(
+    habit?.scheduleDays ?? [],
+  );
   const [targetTime, setTargetTime] = useState(habit?.targetTime ?? "");
-  const [targetValue, setTargetValue] = useState(habit?.targetValue?.toString() ?? "");
+  const [targetValue, setTargetValue] = useState(
+    habit?.targetValue?.toString() ?? "",
+  );
   const [targetUnit, setTargetUnit] = useState(habit?.targetUnit ?? "");
   const [error, setError] = useState("");
 
   function toggleDay(day: number) {
-    setScheduleDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+    setScheduleDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -44,8 +60,21 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
       targetValue: targetValue ? Number(targetValue) : null,
       targetUnit: targetUnit || null,
     };
-    if (habit) updateHabit(habit.id, payload);
-    else createHabit(payload);
+
+    if (habit) {
+      const updated = updateHabit(habit.id, payload);
+      if (!updated) {
+        setError("A habit with that name already exists.");
+        return;
+      }
+    } else {
+      const created = createHabit(payload);
+      if (!created) {
+        setError("A habit with that name already exists.");
+        return;
+      }
+    }
+
     onClose();
   }
 
@@ -56,7 +85,9 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
     <Modal title={habit ? "Edit habit" : "New habit"} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">Name</label>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -66,7 +97,9 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">Description</label>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -77,8 +110,14 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">Category</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputCls}>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Category
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className={inputCls}
+          >
             <option value="">No category</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -89,7 +128,9 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">Schedule</label>
+          <label className="block text-xs font-medium text-void-400 mb-1.5">
+            Schedule
+          </label>
           <div className="flex gap-1 bg-void-800 rounded-lg p-1 mb-3">
             {(["daily", "weekly", "monthly"] as ScheduleType[]).map((t) => (
               <button
@@ -97,7 +138,9 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
                 type="button"
                 onClick={() => setScheduleType(t)}
                 className={`flex-1 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
-                  scheduleType === t ? "bg-void-700 text-gold-300" : "text-void-400"
+                  scheduleType === t
+                    ? "bg-void-700 text-gold-300"
+                    : "text-void-400"
                 }`}
               >
                 {t}
@@ -146,11 +189,20 @@ export default function HabitFormModal({ habit, onClose }: { habit?: Habit | nul
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-void-400 mb-1.5">Target time</label>
-            <input type="time" value={targetTime} onChange={(e) => setTargetTime(e.target.value)} className={inputCls} />
+            <label className="block text-xs font-medium text-void-400 mb-1.5">
+              Target time
+            </label>
+            <input
+              type="time"
+              value={targetTime}
+              onChange={(e) => setTargetTime(e.target.value)}
+              className={inputCls}
+            />
           </div>
           <div>
-            <label className="block text-xs font-medium text-void-400 mb-1.5">Target value</label>
+            <label className="block text-xs font-medium text-void-400 mb-1.5">
+              Target value
+            </label>
             <div className="flex gap-1.5">
               <input
                 type="number"

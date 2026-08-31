@@ -2,16 +2,24 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Plus, Feather, GripVertical } from "lucide-react";
+import { Plus, Feather, GripVertical, Flame, Search } from "lucide-react";
 import { useData } from "@/lib/DataContext";
-import { isScheduledOn, todayStr } from "@/lib/schedule";
+import {
+  currentStreak,
+  isScheduledOn,
+  longestStreak,
+  todayStr,
+} from "@/lib/schedule";
 import HabitCard from "@/components/HabitCard";
 import HabitFormModal from "@/components/HabitFormModal";
+import HabitTemplateModal from "@/components/HabitTemplateModal";
 import ProgressDial from "@/components/ProgressDial";
 
 export default function DashboardPage() {
   const { habits, categories, logs, settings, reorderHabits } = useData();
   const [showForm, setShowForm] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [query, setQuery] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const today = todayStr();
@@ -39,6 +47,31 @@ export default function DashboardPage() {
     ? (completedCount / todaysHabits.length) * 100
     : 0;
 
+  const filteredHabits = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return todaysHabits;
+    return todaysHabits.filter((habit) => {
+      const haystack = `${habit.name} ${habit.description}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [query, todaysHabits]);
+
+  const activeHabits = habits.filter((h) => !h.archived);
+  const topCurrentStreak = activeHabits.length
+    ? Math.max(...activeHabits.map((h) => currentStreak(h, logs)))
+    : 0;
+  const topLongestStreak = activeHabits.length
+    ? Math.max(...activeHabits.map((h) => longestStreak(h, logs)))
+    : 0;
+  const milestoneTargets = [7, 30, 100];
+  const nextMilestone =
+    milestoneTargets.find((target) => topCurrentStreak < target) ??
+    milestoneTargets[milestoneTargets.length - 1];
+  const milestonePercent = Math.min(
+    100,
+    Math.round((topCurrentStreak / nextMilestone) * 100),
+  );
+
   const handleDragStart = (habitId: string) => {
     setDraggedId(habitId);
   };
@@ -54,8 +87,11 @@ export default function DashboardPage() {
       return;
     }
 
-    const draggedIdx = todaysHabits.findIndex((h) => h.id === draggedId);
-    const targetIdx = todaysHabits.findIndex((h) => h.id === targetHabitId);
+    const orderedAll = [...habits].sort(
+      (a, b) => (a.order ?? 0) - (b.order ?? 0),
+    );
+    const draggedIdx = orderedAll.findIndex((h) => h.id === draggedId);
+    const targetIdx = orderedAll.findIndex((h) => h.id === targetHabitId);
 
     if (draggedIdx === -1 || targetIdx === -1) {
       setDraggedId(null);
@@ -63,23 +99,15 @@ export default function DashboardPage() {
       return;
     }
 
-    // Reorder the today's habits array
-    const reordered = [...todaysHabits];
-    const [movedHabit] = reordered.splice(draggedIdx, 1);
-    reordered.splice(targetIdx, 0, movedHabit);
+    const [movedHabit] = orderedAll.splice(draggedIdx, 1);
+    orderedAll.splice(targetIdx, 0, movedHabit);
 
-    // Update order numbers
-    const updatedReordered = reordered.map((h, idx) => ({
-      ...h,
+    const updatedReordered = orderedAll.map((habit, idx) => ({
+      ...habit,
       order: idx,
     }));
 
-    // Merge back into all habits
-    const allHabitsUpdated = habits.map(
-      (h) => updatedReordered.find((ur) => ur.id === h.id) ?? h,
-    );
-
-    reorderHabits(allHabitsUpdated);
+    reorderHabits(updatedReordered);
     setDraggedId(null);
     setDragOverId(null);
   };
@@ -100,19 +128,46 @@ export default function DashboardPage() {
 
     const interval = setInterval(() => {
       const now = new Date();
+      const reminderLead = Math.max(0, settings.reminderLeadMinutes || 0);
+
       todaysHabits.forEach((h) => {
         if (!h.targetTime || logsByHabit.get(h.id)?.completed) return;
+
         const [hh, mm] = h.targetTime.split(":").map(Number);
         const target = new Date();
         target.setHours(hh, mm, 0, 0);
-        const minutesPast = (now.getTime() - target.getTime()) / 60000;
-        if (minutesPast >= 0 && minutesPast < 1) {
-          new Notification("Habit due", { body: `"${h.name}" is due now.` });
-        }
+
+        const minutesUntilTarget = (target.getTime() - now.getTime()) / 60000;
+        const dueNow = minutesUntilTarget <= 0 && minutesUntilTarget >= -1;
+        const remindWindow =
+          minutesUntilTarget <= reminderLead && minutesUntilTarget >= -1;
+
+        if (!dueNow && !remindWindow) return;
+
+        const reminderKey = `momentum_reminder_${h.id}_${today}_${h.targetTime}`;
+        if (sessionStorage.getItem(reminderKey)) return;
+
+        sessionStorage.setItem(reminderKey, "sent");
+
+        const message = dueNow
+          ? `"${h.name}" is due now.`
+          : `"${h.name}" is due in ${Math.max(
+              0,
+              Math.ceil(minutesUntilTarget),
+            )} minutes.`;
+
+        new Notification("Smart reminder", { body: message });
       });
-    }, 60000);
+    }, 30000);
+
     return () => clearInterval(interval);
-  }, [todaysHabits, logsByHabit, settings.notificationsEnabled]);
+  }, [
+    todaysHabits,
+    logsByHabit,
+    settings.notificationsEnabled,
+    settings.reminderLeadMinutes,
+    today,
+  ]);
 
   return (
     <div>
@@ -123,12 +178,55 @@ export default function DashboardPage() {
             {format(new Date(), "EEEE, MMMM d")}
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-3.5 py-2.5 transition-colors"
-        >
-          <Plus size={16} /> New habit
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="flex items-center gap-1.5 bg-void-800 border border-void-600 hover:border-void-400 text-parchment text-sm font-medium rounded-lg px-3 py-2.5 transition-colors"
+          >
+            Templates
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-3.5 py-2.5 transition-colors"
+          >
+            <Plus size={16} /> New habit
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-void-700 bg-void-900/60 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-void-400">
+              Overall streak
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <Flame className="text-gold-400" size={18} />
+              <span className="font-display text-2xl text-parchment">
+                {topCurrentStreak}d
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-void-500">
+              Best
+            </p>
+            <p className="mt-2 text-lg font-semibold text-gold-300">
+              {topLongestStreak}d
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 h-2 rounded-full bg-void-800 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-gold-400 to-amber-300"
+            style={{ width: `${Math.min(100, milestonePercent)}%` }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-void-400">
+          {topCurrentStreak >= nextMilestone
+            ? `Milestone unlocked: ${nextMilestone} days`
+            : `${topCurrentStreak}/${nextMilestone} days to next milestone`}
+        </p>
       </div>
 
       <div className="flex items-center gap-6 bg-void-900/60 border border-void-700 rounded-2xl p-6 mb-8">
@@ -153,7 +251,23 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {todaysHabits.length === 0 ? (
+      <div className="mb-4">
+        <label className="relative block">
+          <span className="sr-only">Search habits</span>
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-void-500"
+            size={15}
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search habits"
+            className="w-full rounded-xl border border-void-600 bg-void-900/60 py-2.5 pl-9 pr-3 text-sm text-parchment placeholder:text-void-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+          />
+        </label>
+      </div>
+
+      {filteredHabits.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-void-600 rounded-2xl">
           <Feather
             className="mx-auto text-void-600 mb-3"
@@ -172,7 +286,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {todaysHabits.map((h) => (
+          {filteredHabits.map((h) => (
             <div
               key={h.id}
               draggable
@@ -206,6 +320,9 @@ export default function DashboardPage() {
       )}
 
       {showForm && <HabitFormModal onClose={() => setShowForm(false)} />}
+      {showTemplates && (
+        <HabitTemplateModal onClose={() => setShowTemplates(false)} />
+      )}
     </div>
   );
 }

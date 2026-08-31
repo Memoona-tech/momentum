@@ -8,7 +8,14 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import { AppData, Category, Habit, HabitLog, Settings } from "./types";
+import {
+  AppData,
+  Category,
+  Habit,
+  HabitLog,
+  HabitTemplate,
+  Settings,
+} from "./types";
 import { loadData, saveData, newId } from "./storage";
 
 interface DataContextValue {
@@ -17,8 +24,9 @@ interface DataContextValue {
   categories: Category[];
   logs: HabitLog[];
   settings: Settings;
-  createHabit: (h: Partial<Habit>) => void;
-  updateHabit: (id: string, h: Partial<Habit>) => void;
+  templates: HabitTemplate[];
+  createHabit: (h: Partial<Habit>) => boolean;
+  updateHabit: (id: string, h: Partial<Habit>) => boolean;
   deleteHabit: (id: string) => void;
   reorderHabits: (reorderedHabits: Habit[]) => void;
   createCategory: (c: Partial<Category>) => void;
@@ -30,9 +38,14 @@ interface DataContextValue {
     completed: boolean,
     value?: number | null,
     note?: string | null,
+    durationMinutes?: number | null,
   ) => void;
   unsetLog: (habitId: string, date: string) => void;
   updateSettings: (s: Partial<Settings>) => void;
+  listTemplates: () => HabitTemplate[];
+  createTemplate: (template: Omit<HabitTemplate, "id" | "createdAt">) => void;
+  useTemplate: (templateId: string) => void;
+  deleteTemplate: (templateId: string) => void;
   replaceAll: (data: AppData) => void;
 }
 
@@ -50,6 +63,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveData(next);
   }, []);
 
+  function normalizeHabitName(value: string) {
+    return value.trim().toLowerCase();
+  }
+
+  function isHabitNameTaken(name: string, ignoreId?: string) {
+    const normalized = normalizeHabitName(name);
+    return data!.habits.some(
+      (habit) =>
+        habit.id !== ignoreId &&
+        normalizeHabitName(habit.name) === normalized &&
+        normalized.length > 0,
+    );
+  }
+
   if (!data) {
     // Nothing renders until localStorage is read on the client, avoiding
     // a server/client mismatch flash of empty state.
@@ -57,9 +84,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   function createHabit(h: Partial<Habit>) {
+    const name = (h.name ?? "Untitled habit").trim();
+    if (!name || isHabitNameTaken(name)) return false;
+
     const habit: Habit = {
       id: newId(),
-      name: h.name ?? "Untitled habit",
+      name,
       description: h.description ?? "",
       categoryId: h.categoryId ?? null,
       scheduleType: h.scheduleType ?? "daily",
@@ -70,15 +100,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
       archived: false,
       createdAt: new Date().toISOString(),
       order: data!.habits.length,
+      milestones: h.milestones ?? [7, 30, 100],
+      achievedMilestones: h.achievedMilestones ?? [],
     };
     persist({ ...data!, habits: [habit, ...data!.habits] });
+    return true;
   }
 
   function updateHabit(id: string, h: Partial<Habit>) {
+    const existing = data!.habits.find((habit) => habit.id === id);
+    const nextName = (h.name ?? existing?.name ?? "").trim();
+    if (nextName && isHabitNameTaken(nextName, id)) return false;
+
     persist({
       ...data!,
-      habits: data!.habits.map((x) => (x.id === id ? { ...x, ...h } : x)),
+      habits: data!.habits.map((x) =>
+        x.id === id ? { ...x, ...h, name: nextName || x.name } : x,
+      ),
     });
+    return true;
   }
 
   function deleteHabit(id: string) {
@@ -131,6 +171,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     completed: boolean,
     value?: number | null,
     note?: string | null,
+    durationMinutes?: number | null,
   ) {
     const existing = data!.logs.find(
       (l) => l.habitId === habitId && l.date === date,
@@ -140,6 +181,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       date,
       completed,
       value: value ?? null,
+      durationMinutes: durationMinutes ?? null,
       note: note ?? null,
       loggedAt: new Date().toISOString(),
     };
@@ -164,6 +206,61 @@ export function DataProvider({ children }: { children: ReactNode }) {
     persist({ ...data!, settings: { ...data!.settings, ...s } });
   }
 
+  function listTemplates() {
+    return data!.templates ?? [];
+  }
+
+  function createTemplate(template: Omit<HabitTemplate, "id" | "createdAt">) {
+    const nextTemplate: HabitTemplate = {
+      ...template,
+      habits: template.habits ?? [],
+      id: newId(),
+      createdAt: new Date().toISOString(),
+    };
+    persist({
+      ...data!,
+      templates: [...(data!.templates ?? []), nextTemplate],
+    });
+  }
+
+  function useTemplate(templateId: string) {
+    const template = (data!.templates ?? []).find((t) => t.id === templateId);
+    if (!template) return;
+
+    const createdAt = new Date().toISOString();
+    const nextHabits = template.habits
+      .filter((item) => !isHabitNameTaken(item.name))
+      .map((item, index) => {
+        const habitId = newId();
+        return {
+          id: habitId,
+          name: item.name,
+          description: item.description,
+          categoryId: item.categoryId,
+          scheduleType: item.scheduleType,
+          scheduleDays: item.scheduleDays,
+          targetTime: item.targetTime,
+          targetValue: item.targetValue,
+          targetUnit: item.targetUnit,
+          archived: false,
+          createdAt,
+          order: data!.habits.length + index,
+          milestones: [7, 30, 100],
+          achievedMilestones: [],
+        } satisfies Habit;
+      });
+
+    if (nextHabits.length === 0) return;
+    persist({ ...data!, habits: [...nextHabits, ...data!.habits] });
+  }
+
+  function deleteTemplate(templateId: string) {
+    persist({
+      ...data!,
+      templates: (data!.templates ?? []).filter((t) => t.id !== templateId),
+    });
+  }
+
   function replaceAll(next: AppData) {
     persist(next);
   }
@@ -177,6 +274,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         categories: data.categories,
         logs: data.logs,
         settings: data.settings,
+        templates: data.templates ?? [],
         createHabit,
         updateHabit,
         deleteHabit,
@@ -186,6 +284,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setLog,
         unsetLog,
         updateSettings,
+        listTemplates,
+        createTemplate,
+        useTemplate,
+        deleteTemplate,
         replaceAll,
       }}
     >

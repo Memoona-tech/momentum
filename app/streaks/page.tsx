@@ -7,6 +7,7 @@ import {
   buildContributionGrid,
   currentStreak,
   longestStreak,
+  nextMilestoneProgress,
 } from "@/lib/schedule";
 
 function hexToRgba(hex: string, alpha: number) {
@@ -31,18 +32,20 @@ export default function StreaksPage() {
 
   const contributionByHabit = useMemo(
     () =>
-      activeHabits.map((habit) => {
-        const cells = buildContributionGrid(habit, logs, 28);
-        const weeks = Array.from(
-          { length: Math.ceil(cells.length / 7) },
-          (_, index) => cells.slice(index * 7, index * 7 + 7),
-        );
-        return {
-          habit,
-          weeks,
-          totalCompleted: cells.filter((cell) => cell.completed).length,
-        };
-      }),
+      [...activeHabits]
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((habit) => {
+          const cells = buildContributionGrid(habit, logs, 28);
+          const weeks = Array.from(
+            { length: Math.ceil(cells.length / 7) },
+            (_, index) => cells.slice(index * 7, index * 7 + 7),
+          );
+          return {
+            habit,
+            weeks,
+            totalCompleted: cells.filter((cell) => cell.completed).length,
+          };
+        }),
     [activeHabits, logs],
   );
 
@@ -77,6 +80,37 @@ export default function StreaksPage() {
               <span className="text-[11px] text-void-400">
                 {longestStreak(habit, logs)} best
               </span>
+            </div>
+
+            <div className="mt-4">
+              {(() => {
+                const milestone = nextMilestoneProgress(habit, logs);
+                const reached = milestone.reached;
+                return (
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-[10px] text-void-400 mb-1">
+                      <span
+                        className={
+                          reached ? "text-emerald-300" : "text-amber-300"
+                        }
+                      >
+                        {reached
+                          ? `Milestone unlocked: ${milestone.target}`
+                          : `${milestone.current}/${milestone.target} to next milestone`}
+                      </span>
+                      {!reached && <span>{milestone.remaining} days left</span>}
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-void-700 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-gold-500"
+                        style={{
+                          width: `${Math.min(100, milestone.percent)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="overflow-x-auto pb-1">

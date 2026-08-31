@@ -1,15 +1,35 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useData } from "@/lib/DataContext";
-import { Plus, Zap, Flame, BarChart3 } from "lucide-react";
+import { Plus, Zap, Flame, BarChart3, Download } from "lucide-react";
 import { getIcon } from "@/lib/icons";
 
 export default function WidgetsPage() {
   const { habits, categories, settings } = useData();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const onBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    };
+  }, []);
 
   const dailyNotePreview = (settings.profile?.dailyNote || "").slice(0, 50);
+
+  async function handleInstall() {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -17,17 +37,33 @@ export default function WidgetsPage() {
 
       <div className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
         <h2 className="text-sm font-semibold mb-2 text-parchment">
-          How to add widgets
+          Widget support
         </h2>
         <p className="text-xs text-void-400 mb-3 leading-relaxed">
-          <strong>iPhone/iPad:</strong> Long-press your home screen → tap "Add
-          widget" → search for Momentum → choose a widget.
+          Native home-screen widgets are not exposed by regular browser apps in
+          the same way as a native iOS/Android app. Momentum can still be
+          installed as a PWA on your device, and the widget pages below are
+          quick links for your dashboard views.
           <br />
-          <strong>Android:</strong> Long-press your home screen → tap "Widgets"
-          → find Momentum → add to screen.
           <br />
-          <strong>Laptop:</strong> Bookmark widget pages for quick access.
+          <strong>Best option:</strong> install Momentum to your home screen
+          from the browser, then use it like an app instead of waiting for OS
+          widget support.
         </p>
+        {installPrompt ? (
+          <button
+            type="button"
+            onClick={handleInstall}
+            className="inline-flex items-center gap-2 rounded-lg bg-gold-500 px-3 py-2 text-sm font-semibold text-void-950"
+          >
+            <Download size={15} /> Install Momentum
+          </button>
+        ) : (
+          <p className="text-[11px] text-void-400">
+            If your browser supports install prompts, this button will appear
+            when a compatible install is available.
+          </p>
+        )}
       </div>
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">

@@ -98,4 +98,80 @@ export function buildContributionGrid(
   return cells;
 }
 
+export function formatLoggedValue(habit: Habit, log?: HabitLog): string | null {
+  if (!log) return null;
+
+  if (log.durationMinutes != null) {
+    const totalMinutes = Math.max(0, Math.round(log.durationMinutes));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours && minutes) return `${hours}h ${minutes}m`;
+    if (hours) return `${hours}h`;
+    if (minutes) return `${minutes}m`;
+    return "0m";
+  }
+
+  if (log.value != null) {
+    const suffix = habit.targetUnit ? ` ${habit.targetUnit}` : "";
+    return `${log.value}${suffix}`;
+  }
+
+  return null;
+}
+
+export function getUnlockedMilestones(
+  habit: Habit,
+  logs: HabitLog[],
+): number[] {
+  const currentStrk = currentStreak(habit, logs);
+  return (habit.milestones ?? [7, 30, 100]).filter((m) => currentStrk >= m);
+}
+
+export function nextMilestoneProgress(
+  habit: Habit,
+  logs: HabitLog[],
+): {
+  current: number;
+  nextMilestone: number;
+  target: number;
+  remaining: number;
+  percent: number;
+  reached: boolean;
+} {
+  const current = currentStreak(habit, logs);
+  const milestones = [...(habit.milestones ?? [7, 30, 100])].sort(
+    (a, b) => a - b,
+  );
+
+  if (milestones.length === 0) {
+    return {
+      current,
+      nextMilestone: 0,
+      target: 0,
+      remaining: 0,
+      percent: 100,
+      reached: true,
+    };
+  }
+
+  const nextMilestone =
+    milestones.find((m) => current < m) ?? milestones[milestones.length - 1];
+  const target = nextMilestone;
+  const remaining = Math.max(0, target - current);
+  const reached = current >= target;
+  const percent = reached
+    ? 100
+    : Math.min(100, Math.round((current / target) * 100));
+
+  return {
+    current,
+    nextMilestone: target,
+    target,
+    remaining,
+    percent,
+    reached,
+  };
+}
+
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

@@ -302,13 +302,13 @@ export default function SettingsPage() {
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
         <h2 className="text-sm font-semibold mb-4 text-parchment">
-          Notifications
+          Smart reminders
         </h2>
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm text-parchment">Reminders</p>
             <p className="text-xs text-void-400">
-              Browser notification when a habit&apos;s target time hits.
+              Browser notifications for habits due soon or at their target time.
             </p>
           </div>
           <button
@@ -331,7 +331,7 @@ export default function SettingsPage() {
         </div>
         <div>
           <label className="block text-xs font-medium text-void-400 mb-1.5">
-            Reminder lead time (minutes)
+            Reminder lead time (minutes before target)
           </label>
           <input
             type="number"
@@ -342,6 +342,10 @@ export default function SettingsPage() {
             }
             className={`${inputCls} w-32`}
           />
+          <p className="text-[11px] text-void-400 mt-2">
+            Example: if a habit is due at 7:00 PM and you set 15 minutes,
+            Momentum sends a smart reminder at 6:45 PM.
+          </p>
         </div>
       </section>
 
@@ -484,13 +488,35 @@ export default function SettingsPage() {
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
         <h2 className="text-sm font-semibold mb-2 text-parchment">
-          Sync to another device
+          Sync everything to another device
         </h2>
-        <p className="text-xs text-void-400 mb-4">
-          This app stays local-first: use a sync file or copied payload to move
-          your data between devices without accounts, cloud storage, or a
+        <p className="text-xs text-void-400 mb-4 leading-relaxed">
+          Exports <strong>all your data</strong>: habits, logs, streaks,
+          categories, profile name, profile picture, daily note, passcode, and
+          every setting.
+          <br />
+          Transfer to another device without accounts, cloud storage, or a
           backend.
         </p>
+
+        <div className="bg-void-950/50 border border-void-600/30 rounded-lg p-3 mb-4">
+          <p className="text-[11px] text-void-400 font-mono">
+            ✓ All habits + order
+            <br />
+            ✓ All logged entries + milestones
+            <br />
+            ✓ Categories & colors
+            <br />
+            ✓ Profile name & photo
+            <br />
+            ✓ Daily note
+            <br />
+            ✓ Passcode hash
+            <br />
+            ✓ Notifications settings
+            <br />✓ Everything else
+          </p>
+        </div>
 
         <div className="flex flex-col gap-3">
           <button
@@ -517,7 +543,7 @@ export default function SettingsPage() {
               const url = URL.createObjectURL(blob);
               const link = document.createElement("a");
               link.href = url;
-              link.download = `momentum-sync-${new Date()
+              link.download = `momentum-export-${new Date()
                 .toISOString()
                 .slice(0, 10)}.json`;
               link.click();
@@ -525,7 +551,7 @@ export default function SettingsPage() {
             }}
             className="flex items-center justify-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors text-parchment"
           >
-            <Upload size={16} strokeWidth={1.75} /> Export sync file
+            <Upload size={16} strokeWidth={1.75} /> Export everything as JSON
           </button>
 
           <input
@@ -539,7 +565,7 @@ export default function SettingsPage() {
             onClick={handleSyncImportClick}
             className="flex items-center justify-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors text-parchment"
           >
-            Import sync file
+            Import complete backup
           </button>
         </div>
       </section>
