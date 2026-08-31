@@ -20,7 +20,8 @@ function defaultData(): AppData {
     categories: STARTER_CATEGORIES,
     logs: [],
     settings: {
-      theme: "dark",
+      theme: "vault",
+      unlockedThemes: ["vault"],
       notificationsEnabled: true,
       reminderLeadMinutes: 30,
       passcodeHash: null,
@@ -62,7 +63,10 @@ export function loadData(): AppData {
       categories: parsed.categories ?? STARTER_CATEGORIES,
       logs,
       settings: {
-        theme: parsed.settings?.theme ?? "dark",
+        theme: parsed.settings?.theme ?? "vault",
+        unlockedThemes: Array.from(
+          new Set(parsed.settings?.unlockedThemes ?? ["vault"]),
+        ),
         notificationsEnabled: parsed.settings?.notificationsEnabled ?? true,
         reminderLeadMinutes: parsed.settings?.reminderLeadMinutes ?? 30,
         passcodeHash: parsed.settings?.passcodeHash ?? null,

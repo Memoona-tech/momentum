@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useData } from "@/lib/DataContext";
 import {
   LayoutGrid,
   LineChart,
@@ -30,13 +31,37 @@ const NAV_ITEMS = [
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { settings } = useData();
+
+  const themeStyles: Record<string, { backgroundImage: string }> = {
+    vault: {
+      backgroundImage:
+        "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
+    },
+    ember: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(249,115,22,0.18), transparent 35%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
+    },
+    forest: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(63,138,115,0.16), transparent 30%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+    },
+    midnight: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(139,92,246,0.14), transparent 30%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+    },
+  };
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div
+      data-theme={settings.theme}
+      className="min-h-screen flex flex-col md:flex-row"
+      style={themeStyles[settings.theme] ?? themeStyles.vault}
+    >
       <aside className="hidden md:flex md:w-64 md:flex-col border-r border-void-700 bg-void-900/60 px-5 py-7">
         <div className="flex items-center gap-2.5 px-1 mb-10">
           <div className="w-8 h-8 rounded-full border border-gold-500/50 flex items-center justify-center">

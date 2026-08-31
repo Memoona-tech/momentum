@@ -7,6 +7,55 @@ export interface ContributionCell {
   completed: boolean;
 }
 
+export interface MilestoneAchievement {
+  id: string;
+  habitId: string;
+  habitName: string;
+  milestone: number;
+  title: string;
+  description: string;
+}
+
+export interface ThemeUnlockOption {
+  id: string;
+  name: string;
+  description: string;
+  accentColor: string;
+  threshold: number;
+  unlocked: boolean;
+}
+
+export const MILESTONE_THEME_UNLOCKS: Omit<ThemeUnlockOption, "unlocked">[] = [
+  {
+    id: "vault",
+    name: "Vault",
+    description: "The original brass-and-void look.",
+    accentColor: "#c9a44c",
+    threshold: 0,
+  },
+  {
+    id: "ember",
+    name: "Ember",
+    description: "Warm copper glow for your first streak badge.",
+    accentColor: "#f97316",
+    threshold: 1,
+  },
+  {
+    id: "forest",
+    name: "Forest",
+    description: "A calmer green arc for deeper streaks.",
+    accentColor: "#3f8a73",
+    threshold: 3,
+  },
+  {
+    id: "midnight",
+    name: "Midnight",
+    description: "A cooler slate finish after bigger wins.",
+    accentColor: "#8b5cf6",
+    threshold: 6,
+  },
+];
+
 export function isScheduledOn(habit: Habit, date: Date): boolean {
   if (habit.scheduleType === "daily") return true;
   if (habit.scheduleType === "weekly")
@@ -125,7 +174,46 @@ export function getUnlockedMilestones(
   logs: HabitLog[],
 ): number[] {
   const currentStrk = currentStreak(habit, logs);
-  return (habit.milestones ?? [7, 30, 100]).filter((m) => currentStrk >= m);
+  const unlocked = new Set(habit.achievedMilestones ?? []);
+  (habit.milestones ?? [7, 30, 100]).forEach((m) => {
+    if (currentStrk >= m) unlocked.add(m);
+  });
+  return [...unlocked].sort((a, b) => a - b);
+}
+
+export function getUnlockedMilestoneAchievements(
+  habits: Habit[],
+  logs: HabitLog[],
+): MilestoneAchievement[] {
+  return habits.flatMap((habit) => {
+    const milestoneIds = getUnlockedMilestones(habit, logs);
+    return milestoneIds.map((milestone) => ({
+      id: `${habit.id}:${milestone}`,
+      habitId: habit.id,
+      habitName: habit.name,
+      milestone,
+      title: `${milestone}-day streak`,
+      description: `${habit.name} reached a ${milestone}-day streak.`,
+    }));
+  });
+}
+
+export function getThemeUnlocks(
+  habits: Habit[],
+  logs: HabitLog[],
+  unlockedThemeIds: string[] = [],
+): ThemeUnlockOption[] {
+  const totalAchievements = getUnlockedMilestoneAchievements(
+    habits,
+    logs,
+  ).length;
+  return MILESTONE_THEME_UNLOCKS.map((theme) => ({
+    ...theme,
+    unlocked:
+      theme.id === "vault" ||
+      unlockedThemeIds.includes(theme.id) ||
+      totalAchievements >= theme.threshold,
+  }));
 }
 
 export function nextMilestoneProgress(

@@ -60,7 +60,8 @@ export interface ProfileData {
 }
 
 export interface Settings {
-  theme: "dark" | "light";
+  theme: string;
+  unlockedThemes: string[];
   notificationsEnabled: boolean;
   reminderLeadMinutes: number;
   passcodeHash: string | null;

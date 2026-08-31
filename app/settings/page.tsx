@@ -12,6 +12,10 @@ import {
 import { useData } from "@/lib/DataContext";
 import { ICONS, IconName, getIcon } from "@/lib/icons";
 import { hashPasscode } from "@/lib/storage";
+import {
+  getThemeUnlocks,
+  getUnlockedMilestoneAchievements,
+} from "@/lib/schedule";
 import { AppData } from "@/lib/types";
 
 const COLOR_SWATCHES = [
@@ -36,6 +40,12 @@ export default function SettingsPage() {
     updateSettings,
     replaceAll,
   } = useData();
+  const achievementBadges = getUnlockedMilestoneAchievements(habits, logs);
+  const themeUnlocks = getThemeUnlocks(
+    habits,
+    logs,
+    settings.unlockedThemes ?? [],
+  );
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState(COLOR_SWATCHES[0]);
   const [newIcon, setNewIcon] = useState<IconName>("Star");
@@ -88,6 +98,17 @@ export default function SettingsPage() {
       updateSettings({ passcodeHash: null });
       sessionStorage.removeItem("momentum_unlocked");
     }
+  }
+
+  function handleThemeSelect(themeId: string) {
+    const unlockedTheme = themeUnlocks.find((theme) => theme.id === themeId);
+    if (!unlockedTheme?.unlocked) return;
+    updateSettings({
+      theme: themeId,
+      unlockedThemes: Array.from(
+        new Set([...(settings.unlockedThemes ?? []), themeId]),
+      ),
+    });
   }
 
   function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -297,6 +318,81 @@ export default function SettingsPage() {
               className={`${inputCls} resize-none`}
             />
           </label>
+        </div>
+      </section>
+
+      <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
+        <h2 className="text-sm font-semibold mb-4 text-parchment">
+          Milestone achievements
+        </h2>
+        {achievementBadges.length === 0 ? (
+          <p className="text-sm text-void-400">
+            No badges yet. Keep a streak alive to unlock your first milestone.
+          </p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {achievementBadges.map((achievement) => (
+              <div
+                key={achievement.id}
+                className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-parchment">
+                    {achievement.title}
+                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-300">
+                    badge
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-void-300">
+                  {achievement.habitName} reached a {achievement.milestone}-day
+                  streak.
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
+        <h2 className="text-sm font-semibold mb-4 text-parchment">
+          Theme unlocks
+        </h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          {themeUnlocks.map((theme) => (
+            <button
+              type="button"
+              key={theme.id}
+              disabled={!theme.unlocked}
+              onClick={() => handleThemeSelect(theme.id)}
+              className={`rounded-2xl border p-3 text-left transition-colors ${
+                settings.theme === theme.id
+                  ? "border-gold-500 bg-gold-500/10"
+                  : "border-void-600 bg-void-800/80"
+              } ${theme.unlocked ? "cursor-pointer" : "opacity-50 grayscale"}`}
+              style={{
+                backgroundImage: theme.unlocked
+                  ? `linear-gradient(135deg, ${theme.accentColor}22, rgba(17, 17, 19, 0.85))`
+                  : undefined,
+              }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-parchment">
+                  {theme.name}
+                </span>
+                {theme.unlocked ? (
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-gold-300">
+                    unlocked
+                  </span>
+                ) : (
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-void-400">
+                    {theme.threshold} badges
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-void-300">{theme.description}</p>
+            </button>
+          ))}
         </div>
       </section>
 

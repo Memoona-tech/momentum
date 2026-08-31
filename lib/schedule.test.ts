@@ -4,6 +4,8 @@ import {
   buildContributionGrid,
   nextMilestoneProgress,
   formatLoggedValue,
+  getUnlockedMilestoneAchievements,
+  getThemeUnlocks,
 } from "./schedule";
 import { Habit, HabitLog } from "./types";
 
@@ -97,5 +99,59 @@ describe("formatLoggedValue", () => {
     };
 
     expect(formatLoggedValue(habit, log)).toBe("2h 15m");
+  });
+});
+
+describe("getUnlockedMilestoneAchievements", () => {
+  it("unlocks a badge when a habit hits a streak milestone", () => {
+    const habit: Habit = {
+      ...baseHabit,
+      milestones: [7, 30, 100],
+      achievedMilestones: [],
+    };
+
+    const logs: HabitLog[] = Array.from({ length: 7 }, (_, index) => ({
+      habitId: "habit-1",
+      date: format(addDays(new Date(), -(index + 1)), "yyyy-MM-dd"),
+      completed: true,
+      value: null,
+      durationMinutes: null,
+      note: null,
+      loggedAt: new Date().toISOString(),
+    }));
+
+    const result = getUnlockedMilestoneAchievements([habit], logs);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      habitId: "habit-1",
+      milestone: 7,
+      title: "7-day streak",
+    });
+  });
+});
+
+describe("getThemeUnlocks", () => {
+  it("unlocks theme tiers after enough milestone badges are earned", () => {
+    const habit: Habit = {
+      ...baseHabit,
+      milestones: [7, 30, 100],
+      achievedMilestones: [],
+    };
+
+    const logs: HabitLog[] = Array.from({ length: 7 }, (_, index) => ({
+      habitId: "habit-1",
+      date: format(addDays(new Date(), -(index + 1)), "yyyy-MM-dd"),
+      completed: true,
+      value: null,
+      durationMinutes: null,
+      note: null,
+      loggedAt: new Date().toISOString(),
+    }));
+
+    const result = getThemeUnlocks([habit], logs, ["vault"]);
+
+    expect(result.find((theme) => theme.id === "ember")?.unlocked).toBe(true);
+    expect(result.find((theme) => theme.id === "vault")?.unlocked).toBe(true);
   });
 });

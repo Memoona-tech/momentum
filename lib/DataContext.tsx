@@ -17,6 +17,7 @@ import {
   Settings,
 } from "./types";
 import { loadData, saveData, newId } from "./storage";
+import { getUnlockedMilestones } from "./schedule";
 
 interface DataContextValue {
   ready: boolean;
@@ -190,15 +191,48 @@ export function DataProvider({ children }: { children: ReactNode }) {
           l.habitId === habitId && l.date === date ? entry : l,
         )
       : [...data!.logs, entry];
-    persist({ ...data!, logs });
+    const habitsWithBadges = data!.habits.map((habit) => {
+      if (habit.id !== habitId) {
+        return {
+          ...habit,
+          achievedMilestones: Array.from(
+            new Set([
+              ...(habit.achievedMilestones ?? []),
+              ...getUnlockedMilestones(habit, logs),
+            ]),
+          ).sort((a, b) => a - b),
+        };
+      }
+      return {
+        ...habit,
+        achievedMilestones: Array.from(
+          new Set([
+            ...(habit.achievedMilestones ?? []),
+            ...getUnlockedMilestones(habit, logs),
+          ]),
+        ).sort((a, b) => a - b),
+      };
+    });
+    persist({ ...data!, logs, habits: habitsWithBadges });
   }
 
   function unsetLog(habitId: string, date: string) {
+    const logs = data!.logs.filter(
+      (l) => !(l.habitId === habitId && l.date === date),
+    );
+    const habitsWithBadges = data!.habits.map((habit) => ({
+      ...habit,
+      achievedMilestones: Array.from(
+        new Set([
+          ...(habit.achievedMilestones ?? []),
+          ...getUnlockedMilestones(habit, logs),
+        ]),
+      ).sort((a, b) => a - b),
+    }));
     persist({
       ...data!,
-      logs: data!.logs.filter(
-        (l) => !(l.habitId === habitId && l.date === date),
-      ),
+      logs,
+      habits: habitsWithBadges,
     });
   }
 

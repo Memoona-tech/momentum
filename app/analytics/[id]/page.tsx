@@ -36,7 +36,9 @@ export default function HabitAnalyticsPage() {
 
   const habitId = typeof params?.id === "string" ? params.id : "";
   const habit = habits.find((h) => h.id === habitId);
-  const category = categories.find((c) => c.id === habit?.categoryId ?? null);
+  const category = habit
+    ? categories.find((c) => c.id === habit.categoryId)
+    : undefined;
 
   const dailyData = useMemo(() => {
     if (!habit) return [];
