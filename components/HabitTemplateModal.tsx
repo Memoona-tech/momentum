@@ -348,40 +348,49 @@ export default function HabitTemplateModal({
             <p className="text-sm text-void-400">No templates yet.</p>
           ) : (
             <div className="space-y-2">
-              {templates.map((template: HabitTemplate) => (
-                <div
-                  key={template.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-void-700 bg-void-800 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm text-parchment truncate">
-                      {template.name}
-                    </p>
-                    <p className="text-[11px] text-void-400 truncate">
-                      {template.targetTime ? `${template.targetTime} · ` : ""}
-                      {template.targetValue
-                        ? `${template.targetValue} ${template.targetUnit ?? ""}`
-                        : "No target"}
-                    </p>
+              {templates.map((template: HabitTemplate) => {
+                const summaryHabit = template.habits[0];
+                const summaryTarget = summaryHabit?.targetTime
+                  ? `${summaryHabit.targetTime} · `
+                  : "";
+                const summaryValue =
+                  summaryHabit?.targetValue != null
+                    ? `${summaryHabit.targetValue}${summaryHabit.targetUnit ? ` ${summaryHabit.targetUnit}` : ""}`
+                    : "No target";
+
+                return (
+                  <div
+                    key={template.id}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-void-700 bg-void-800 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm text-parchment truncate">
+                        {template.name}
+                      </p>
+                      <p className="text-[11px] text-void-400 truncate">
+                        {summaryTarget}
+                        {summaryValue}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleUseTemplate(template)}
+                        className="px-2 py-1 rounded-md bg-gold-500/15 text-gold-300 text-[10px] uppercase tracking-wide"
+                      >
+                        use
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTemplate(template.id)}
+                        className="px-2 py-1 rounded-md text-void-400 hover:text-red-400 text-[10px] uppercase tracking-wide"
+                      >
+                        delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleUseTemplate(template)}
-                      className="px-2 py-1 rounded-md bg-gold-500/15 text-gold-300 text-[10px] uppercase tracking-wide"
-                    >
-                      use
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTemplate(template.id)}
-                      className="px-2 py-1 rounded-md text-void-400 hover:text-red-400 text-[10px] uppercase tracking-wide"
-                    >
-                      delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
