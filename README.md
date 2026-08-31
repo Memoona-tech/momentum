@@ -1,8 +1,14 @@
 # Momentum — Habit Tracker
 
-Momentum is a local-first habit tracker built with Next.js. It is designed to feel like a personal command dashboard: daily check-ins, progress streaks, milestone badges, notes, reports, and lightweight customization without needing a backend or account system.
+Momentum is a local-first habit tracker built with Next.js for building better routines without friction.
 
-Everything is stored in the browser using `localStorage`, so the app works instantly without a database or server setup. You can export your data as JSON and bring it to another device or browser whenever you want.
+Track daily habits, streaks, milestones, notes, analytics, and personal progress in a single browser-based app. It keeps your data private and local by default, while still supporting JSON backup and restore flows for moving between devices.
+
+## About
+
+Momentum is designed to feel like a calm, focused command dashboard: daily check-ins, productivity tracking, progress insights, and personal reflection in one place.
+
+Everything is stored in the browser using `localStorage`, so there is no backend, login flow, or database to configure. Export your data as JSON whenever you want a backup or a migration path to another device.
 
 ## Why Momentum
 
@@ -144,7 +150,7 @@ Copyright (c) 2026 Memoona
 GitHub: https://github.com/Memoona-tech
 Email: memoona.se@gmail.com
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is open source and licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 You are free to use, modify, and distribute this project as long as the copyright notice and permission notice are included in copies or substantial portions of the software.
 
