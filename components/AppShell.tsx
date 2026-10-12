@@ -62,7 +62,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       className="min-h-screen flex flex-col md:flex-row"
       style={themeStyles[settings.theme] ?? themeStyles.vault}
     >
-      <aside className="hidden md:flex md:w-64 md:flex-col border-r border-void-700 bg-void-900/60 px-5 py-7">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:sticky md:top-0 md:h-screen md:shrink-0 border-r border-void-700 bg-void-900/60 px-5 py-7 overflow-y-auto">
         <div className="flex items-center gap-2.5 px-1 mb-10">
           <div className="w-8 h-8 rounded-full border border-gold-500/50 flex items-center justify-center">
             <Gem className="text-gold-400" size={15} />
@@ -165,7 +165,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="flex-1 px-4 py-6 md:px-10 md:py-10 pb-24 md:pb-10 max-w-5xl w-full mx-auto">
+      <main className="flex-1 min-w-0 px-4 py-6 md:px-10 md:py-10 pb-24 md:pb-10 max-w-5xl w-full mx-auto">
         {children}
       </main>
     </div>
