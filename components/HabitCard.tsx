@@ -37,11 +37,13 @@ export default function HabitCard({
   category,
   log,
   logs,
+  compact = false,
 }: {
   habit: Habit;
   category?: Category;
   log?: HabitLog;
   logs: HabitLog[];
+  compact?: boolean;
 }) {
   const { setLog, unsetLog } = useData();
   const [showComplete, setShowComplete] = useState(false);
@@ -64,52 +66,63 @@ export default function HabitCard({
   return (
     <>
       <div
-        className={`flex items-center gap-3 rounded-xl border p-4 transition-colors ${
+        className={`flex items-center gap-3 rounded-xl border transition-all ${
+          compact ? "p-3" : "p-4"
+        } ${
           overdue
             ? "border-red-500/30 bg-red-500/[0.04]"
             : completed
               ? "border-emerald-500/25 bg-emerald-500/[0.04]"
-              : "border-void-600 bg-void-900/60"
+              : "border-void-600 bg-void-900/60 hover:border-void-500"
         }`}
       >
         <button
           onClick={toggle}
           aria-label={completed ? "Mark incomplete" : "Mark complete"}
-          className={`shrink-0 w-7 h-7 rounded-full border flex items-center justify-center transition-colors ${
+          className={`shrink-0 ${compact ? "w-6 h-6" : "w-7 h-7"} rounded-full border flex items-center justify-center transition-colors ${
             completed
               ? "bg-emerald-500 border-emerald-500 text-void-950"
               : "border-void-500 hover:border-gold-400"
           }`}
         >
-          {completed && <Check size={15} strokeWidth={2.5} />}
+          {completed && <Check size={compact ? 13 : 15} strokeWidth={2.5} />}
         </button>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p
-              className={`font-medium text-sm ${completed ? "line-through text-void-400" : "text-parchment"}`}
+              className={`font-medium text-sm truncate ${
+                completed ? "line-through text-void-400" : "text-parchment"
+              }`}
+              title={habit.name}
             >
               {habit.name}
             </p>
             <CategoryTag category={category} />
-            <Link
-              href={`/analytics/${habit.id}`}
-              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-gold-300 hover:text-gold-200"
-            >
-              <TrendingUp size={11} strokeWidth={1.75} />
-              analytics
-            </Link>
+            {!compact && (
+              <Link
+                href={`/analytics/${habit.id}`}
+                className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-gold-300 hover:text-gold-200"
+              >
+                <TrendingUp size={11} strokeWidth={1.75} />
+                analytics
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setShowComplete(true)}
-              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-void-400 hover:text-gold-300 transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-void-400 hover:text-gold-300 transition-colors ml-auto sm:ml-0"
               title="Add a check-in note or time spent"
             >
               <Feather size={10} strokeWidth={1.75} />
               {log?.note ? "note" : "+ note"}
             </button>
           </div>
-          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-void-400">
+          <div
+            className={`flex items-center gap-3 ${
+              compact ? "mt-1" : "mt-1.5"
+            } text-[11px] text-void-400`}
+          >
             {habit.targetTime && (
               <span className="flex items-center gap-1 tabular font-mono">
                 <Clock size={11} strokeWidth={1.75} /> {habit.targetTime}
@@ -120,14 +133,14 @@ export default function HabitCard({
                 <Flame size={11} strokeWidth={1.75} /> {streak}
               </span>
             )}
-            {unlockedMilestones.length > 0 && (
+            {!compact && unlockedMilestones.length > 0 && (
               <span className="flex items-center gap-1 text-amber-400 font-medium">
                 <Trophy size={11} strokeWidth={1.75} />{" "}
                 {unlockedMilestones[unlockedMilestones.length - 1]}
               </span>
             )}
             {formatLoggedValue(habit, log) && (
-              <span className="tabular font-mono">
+              <span className="tabular font-mono text-emerald-400">
                 {formatLoggedValue(habit, log)}
               </span>
             )}
@@ -137,7 +150,8 @@ export default function HabitCard({
               </span>
             )}
           </div>
-          {milestoneProgress.nextMilestone > 0 &&
+          {!compact &&
+            milestoneProgress.nextMilestone > 0 &&
             !milestoneProgress.reached && (
               <div className="mt-2">
                 <div className="flex items-center justify-between text-[10px] text-void-400">
@@ -157,7 +171,7 @@ export default function HabitCard({
                 </div>
               </div>
             )}
-          {log?.note && (
+          {!compact && log?.note && (
             <p className="text-xs text-void-400 mt-1 italic truncate">
               &ldquo;{log.note}&rdquo;
             </p>
