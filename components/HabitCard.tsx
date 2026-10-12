@@ -9,6 +9,7 @@ import {
   TrendingUp,
   TriangleAlert,
   Trophy,
+  Feather,
 } from "lucide-react";
 import { Habit, HabitLog, Category } from "@/lib/types";
 import { useData } from "@/lib/DataContext";
@@ -98,6 +99,15 @@ export default function HabitCard({
               <TrendingUp size={11} strokeWidth={1.75} />
               analytics
             </Link>
+            <button
+              type="button"
+              onClick={() => setShowComplete(true)}
+              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-void-400 hover:text-gold-300 transition-colors"
+              title="Add a check-in note or time spent"
+            >
+              <Feather size={10} strokeWidth={1.75} />
+              {log?.note ? "note" : "+ note"}
+            </button>
           </div>
           <div className="flex items-center gap-3 mt-1.5 text-[11px] text-void-400">
             {habit.targetTime && (

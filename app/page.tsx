@@ -23,6 +23,7 @@ import HabitCard from "@/components/HabitCard";
 import HabitFormModal from "@/components/HabitFormModal";
 import ProgressDial from "@/components/ProgressDial";
 import SyncModal from "@/components/SyncModal";
+import DailyMotivation from "@/components/DailyMotivation";
 
 export default function DashboardPage() {
   const { habits, categories, logs, settings, reorderHabits, replaceAll } =
@@ -231,6 +232,8 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      <DailyMotivation />
 
       <div className="mb-6 rounded-2xl border border-void-700 bg-void-900/60 p-4">
         <div className="flex items-center justify-between gap-3">
