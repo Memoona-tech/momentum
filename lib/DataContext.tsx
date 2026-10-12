@@ -11,6 +11,7 @@ import React, {
 import { AppData, Category, Habit, HabitLog, Settings } from "./types";
 import { loadData, saveData, newId } from "./storage";
 import { getUnlockedMilestones } from "./schedule";
+import { mergeAppData, MergeOptions, MergeResult } from "./sync";
 
 interface DataContextValue {
   ready: boolean;
@@ -36,6 +37,7 @@ interface DataContextValue {
   unsetLog: (habitId: string, date: string) => void;
   updateSettings: (s: Partial<Settings>) => void;
   replaceAll: (data: AppData) => void;
+  mergeData: (incoming: AppData, options?: import("./sync").MergeOptions) => import("./sync").MergeResult;
 }
 
 const DataContext = createContext<DataContextValue | undefined>(undefined);
@@ -232,6 +234,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     persist(next);
   }
 
+  function mergeData(incoming: AppData, options?: MergeOptions): MergeResult {
+    const { nextData, result } = mergeAppData(data!, incoming, options);
+    persist(nextData);
+    return result;
+  }
+
   return (
     <DataContext.Provider
       value={{
@@ -251,6 +259,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsetLog,
         updateSettings,
         replaceAll,
+        mergeData,
       }}
     >
       {children}

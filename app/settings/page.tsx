@@ -7,7 +7,10 @@ import {
   Lock,
   LockOpen,
   Upload,
+  Download,
+  ArrowLeftRight,
   Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { ICONS, IconName, getIcon } from "@/lib/icons";
@@ -15,8 +18,12 @@ import { hashPasscode } from "@/lib/storage";
 import {
   getThemeUnlocks,
   getUnlockedMilestoneAchievements,
+  todayStr,
 } from "@/lib/schedule";
+import { generateDemoData } from "@/lib/demoData";
 import { AppData } from "@/lib/types";
+import SyncModal from "@/components/SyncModal";
+import { filterExportData } from "@/lib/sync";
 
 const COLOR_SWATCHES = [
   "#c9a44c",
@@ -51,6 +58,8 @@ export default function SettingsPage() {
   const [newIcon, setNewIcon] = useState<IconName>("Star");
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState("");
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [quickCopied, setQuickCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const syncImportRef = useRef<HTMLInputElement>(null);
@@ -583,111 +592,129 @@ export default function SettingsPage() {
       </section>
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
-        <h2 className="text-sm font-semibold mb-2 text-parchment">
-          Sync everything to another device
-        </h2>
-        <p className="text-xs text-void-400 mb-4 leading-relaxed">
-          Exports <strong>all your data</strong>: habits, logs, streaks,
-          categories, profile name, profile picture, daily note, passcode, and
-          every setting.
-          <br />
-          Transfer to another device without accounts, cloud storage, or a
-          backend.
-        </p>
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-parchment flex items-center gap-2">
+              <ArrowLeftRight size={17} className="text-gold-400" />
+              Sync & Multi-Device Transfer (PC ⇋ Phone)
+            </h2>
+            <p className="text-xs text-void-400 mt-1 leading-relaxed">
+              Export and import a single day (e.g. today or yesterday), a date
+              range, or all habits. <strong>Smart Merge</strong> preserves
+              completed tasks from both devices so you never lose half your data
+              when switching between PC and phone.
+            </p>
+          </div>
+        </div>
 
-        <div className="bg-void-950/50 border border-void-600/30 rounded-lg p-3 mb-4">
-          <p className="text-[11px] text-void-400 font-mono">
-            ✓ All habits + order
+        <div className="bg-void-950/50 border border-void-700/80 rounded-xl p-3.5 mb-4">
+          <p className="text-[11px] text-void-300 leading-relaxed font-mono">
+            ✓ Import/Export specific days (e.g. today only)
             <br />
-            ✓ All logged entries + milestones
+            ✓ Smart Merge prevents overwriting existing completions
             <br />
-            ✓ Categories & colors
-            <br />
-            ✓ Profile name & photo
-            <br />
-            ✓ Daily note
-            <br />
-            ✓ Passcode hash
-            <br />
-            ✓ Notifications settings
-            <br />✓ Everything else
+            ✓ Maps habits between devices even if IDs differ
+            <br />✓ No accounts or server required — direct clipboard or JSON
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-2.5">
           <button
-            onClick={handleCopySyncPayload}
-            className="flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-4 py-2.5 transition-colors"
+            type="button"
+            onClick={() => setShowSyncModal(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-xl px-4 py-3 transition-colors shadow-sm"
           >
-            Copy sync payload
+            <ArrowLeftRight size={16} /> Open Sync & Merge Hub
           </button>
 
           <button
-            onClick={() => {
-              const payload = JSON.stringify(
-                {
-                  exportedAt: new Date().toISOString(),
-                  habits,
-                  categories,
-                  logs,
-                  settings,
-                },
-                null,
-                2,
+            type="button"
+            onClick={async () => {
+              const today = todayStr();
+              const payload = filterExportData(
+                { habits, categories, logs, settings },
+                { type: "single", startDate: today, endDate: today },
               );
-              const blob = new Blob([payload], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.href = url;
-              link.download = `momentum-export-${new Date()
-                .toISOString()
-                .slice(0, 10)}.json`;
-              link.click();
-              URL.revokeObjectURL(url);
+              try {
+                await navigator.clipboard.writeText(
+                  JSON.stringify(payload, null, 2),
+                );
+                setQuickCopied(true);
+                setTimeout(() => setQuickCopied(false), 2500);
+              } catch {
+                setShowSyncModal(true);
+              }
             }}
-            className="flex items-center justify-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors text-parchment"
+            className="flex items-center justify-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-xl px-4 py-3 transition-colors text-parchment"
           >
-            <Upload size={16} strokeWidth={1.75} /> Export everything as JSON
-          </button>
-
-          <input
-            ref={syncImportRef}
-            type="file"
-            accept="application/json"
-            onChange={handleSyncImportFile}
-            className="hidden"
-          />
-          <button
-            onClick={handleSyncImportClick}
-            className="flex items-center justify-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors text-parchment"
-          >
-            Import complete backup
+            {quickCopied ? "✓ Copied Today's Habits!" : "Copy Today's Data"}
           </button>
         </div>
       </section>
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
-        <h2 className="text-sm font-semibold mb-2 text-parchment">
-          Restore from backup
-        </h2>
-        <p className="text-xs text-void-400 mb-3">
-          Import a JSON file exported from Reports to restore your data on this
-          device — for example after switching browsers.
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/json"
-          onChange={handleImportFile}
-          className="hidden"
-        />
-        <button
-          onClick={handleImportClick}
-          className="flex items-center gap-2 bg-void-800 border border-void-600 hover:border-void-400 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors text-parchment"
-        >
-          <Upload size={16} strokeWidth={1.75} /> Import JSON backup
-        </button>
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-parchment flex items-center gap-2">
+              <Sparkles size={17} className="text-gold-400" />
+              Demo Data & Reset
+            </h2>
+            <p className="text-xs text-void-400 mt-1 leading-relaxed">
+              Quickly preview Momentum with pre-configured routines (coding, cardio, reading, mindfulness), 30-day streak heatmaps, and milestone unlocks, or reset everything to zero.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                habits.length > 0 &&
+                !confirm(
+                  "Replace current habits with demo habits? You can export your current data first.",
+                )
+              ) {
+                return;
+              }
+              replaceAll(generateDemoData());
+            }}
+            className="flex items-center gap-2 bg-void-800 border border-void-600 hover:border-gold-500/50 text-parchment text-sm font-medium rounded-xl px-4 py-2.5 transition-colors"
+          >
+            <Sparkles size={15} className="text-gold-400" /> Load Demo Data
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                !confirm(
+                  "Are you sure you want to clear all data? This will reset all habits and logs.",
+                )
+              ) {
+                return;
+              }
+              replaceAll({
+                habits: [],
+                categories,
+                logs: [],
+                settings: {
+                  ...settings,
+                  theme: "vault",
+                  unlockedThemes: ["vault"],
+                },
+              });
+            }}
+            className="flex items-center gap-2 bg-void-900 border border-void-700 hover:border-red-500/50 text-void-400 hover:text-red-400 text-sm font-medium rounded-xl px-4 py-2.5 transition-colors"
+          >
+            <Trash2 size={15} /> Clear All Data
+          </button>
+        </div>
       </section>
+
+      {showSyncModal && (
+        <SyncModal onClose={() => setShowSyncModal(false)} />
+      )}
     </div>
   );
 }

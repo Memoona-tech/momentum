@@ -21,6 +21,9 @@ const baseHabit: Habit = {
   targetUnit: null,
   archived: false,
   createdAt: new Date().toISOString(),
+  order: 0,
+  milestones: [7, 30, 100],
+  achievedMilestones: [],
 };
 
 describe("buildContributionGrid", () => {
@@ -32,6 +35,7 @@ describe("buildContributionGrid", () => {
         date: format(addDays(today, -1), "yyyy-MM-dd"),
         completed: true,
         value: null,
+        durationMinutes: null,
         note: null,
         loggedAt: new Date().toISOString(),
       },
@@ -40,6 +44,7 @@ describe("buildContributionGrid", () => {
         date: format(addDays(today, -3), "yyyy-MM-dd"),
         completed: true,
         value: null,
+        durationMinutes: null,
         note: null,
         loggedAt: new Date().toISOString(),
       },

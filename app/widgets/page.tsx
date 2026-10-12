@@ -82,7 +82,7 @@ export default function WidgetsPage() {
                   Today
                 </span>
                 <span className="text-xs text-void-400">
-                  Today's habits + daily note
+                  Today&apos;s habits + daily note
                 </span>
               </div>
             </div>
@@ -163,8 +163,8 @@ export default function WidgetsPage() {
             Your daily note preview
           </h2>
           <p className="text-sm text-parchment italic">
-            "{dailyNotePreview}
-            {(settings.profile?.dailyNote || "").length > 50 ? "..." : ""}"
+            &ldquo;{dailyNotePreview}
+            {(settings.profile?.dailyNote || "").length > 50 ? "..." : ""}&rdquo;
           </p>
           <p className="text-xs text-void-400 mt-2">
             This appears at the top of every widget.

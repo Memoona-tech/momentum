@@ -2,7 +2,15 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Plus, Feather, GripVertical, Flame, Search } from "lucide-react";
+import {
+  Plus,
+  Feather,
+  GripVertical,
+  Flame,
+  Search,
+  ArrowLeftRight,
+  Sparkles,
+} from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import {
   currentStreak,
@@ -10,17 +18,33 @@ import {
   longestStreak,
   todayStr,
 } from "@/lib/schedule";
+import { generateDemoData } from "@/lib/demoData";
 import HabitCard from "@/components/HabitCard";
 import HabitFormModal from "@/components/HabitFormModal";
 import ProgressDial from "@/components/ProgressDial";
+import SyncModal from "@/components/SyncModal";
 
 export default function DashboardPage() {
-  const { habits, categories, logs, settings, reorderHabits } = useData();
+  const { habits, categories, logs, settings, reorderHabits, replaceAll } =
+    useData();
   const [showForm, setShowForm] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [query, setQuery] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const today = todayStr();
+
+  function handleLoadDemoData() {
+    if (
+      habits.length > 0 &&
+      !window.confirm(
+        "Load demo habits and streaks? This will populate sample data to explore the app.",
+      )
+    ) {
+      return;
+    }
+    replaceAll(generateDemoData());
+  }
 
   const todaysHabits = useMemo(
     () =>
@@ -177,6 +201,28 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {habits.length === 0 && (
+            <button
+              type="button"
+              onClick={handleLoadDemoData}
+              className="flex items-center gap-1.5 bg-void-800 hover:bg-void-700 text-gold-400 border border-gold-500/40 text-sm font-medium rounded-lg px-3 py-2.5 transition-colors"
+              title="Load sample habits and 30-day streak history"
+            >
+              <Sparkles size={15} />
+              <span className="hidden sm:inline">Load Demo Data</span>
+              <span className="sm:hidden">Demo</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowSyncModal(true)}
+            className="flex items-center gap-1.5 bg-void-800 hover:bg-void-700 text-parchment border border-void-600 text-sm font-medium rounded-lg px-3 py-2.5 transition-colors"
+            title="Sync habit completions with PC or Phone"
+          >
+            <ArrowLeftRight size={15} className="text-gold-400" />
+            <span className="hidden sm:inline">Sync PC / Phone</span>
+            <span className="sm:hidden">Sync</span>
+          </button>
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-3.5 py-2.5 transition-colors"
@@ -260,21 +306,38 @@ export default function DashboardPage() {
       </div>
 
       {filteredHabits.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-void-600 rounded-2xl">
+        <div className="text-center py-16 px-4 border border-dashed border-void-600 rounded-2xl">
           <Feather
             className="mx-auto text-void-600 mb-3"
-            size={26}
+            size={28}
             strokeWidth={1.5}
           />
-          <p className="text-void-400 text-sm mb-4">
-            Nothing scheduled for today yet.
+          <p className="text-parchment font-medium text-base mb-1">
+            {query ? "No habits match your search" : "No habits scheduled yet"}
           </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="text-gold-400 text-sm font-medium hover:underline"
-          >
-            Add your first habit
-          </button>
+          <p className="text-void-400 text-sm mb-6 max-w-sm mx-auto">
+            {query
+              ? "Try adjusting your search terms to find what you need."
+              : "Create your first routine or load sample data to explore streaks, heatmaps, and milestone unlocks."}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-void-950 text-sm font-semibold rounded-lg px-4 py-2.5 transition-colors"
+            >
+              <Plus size={16} /> Add your first habit
+            </button>
+            {!query && (
+              <button
+                type="button"
+                onClick={handleLoadDemoData}
+                className="flex items-center gap-1.5 bg-void-800 hover:bg-void-700 text-parchment border border-void-600 text-sm font-medium rounded-lg px-4 py-2.5 transition-colors"
+              >
+                <Sparkles size={15} className="text-gold-400" />
+                Load demo data
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
@@ -312,6 +375,7 @@ export default function DashboardPage() {
       )}
 
       {showForm && <HabitFormModal onClose={() => setShowForm(false)} />}
+      {showSyncModal && <SyncModal onClose={() => setShowSyncModal(false)} />}
     </div>
   );
 }
