@@ -15,7 +15,28 @@ import {
   Feather,
   Menu,
   X,
+  Github,
+  Globe,
+  Mail,
 } from "lucide-react";
+
+const SOCIAL_LINKS = [
+  {
+    href: "https://github.com/Memoona-tech",
+    label: "GitHub",
+    icon: Github,
+  },
+  {
+    href: "https://memoonasaleem.vercel.app",
+    label: "Portfolio",
+    icon: Globe,
+  },
+  {
+    href: "mailto:memoona.se@gmail.com",
+    label: "Email",
+    icon: Mail,
+  },
+];
 
 const NAV_ITEMS = [
   { href: "/", label: "Today", icon: LayoutGrid, matchPrefixes: ["/"] },
@@ -124,6 +145,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const renderSocialLinks = () => (
+    <div className="flex items-center justify-between px-1.5 pt-1.5 text-void-400">
+      <span className="text-[10px] font-mono tracking-widest text-void-500 uppercase">
+        Connect
+      </span>
+      <div className="flex items-center gap-1">
+        {SOCIAL_LINKS.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={link.label}
+            className="p-1.5 rounded-lg text-void-400 hover:text-gold-300 hover:bg-void-800 transition-colors"
+          >
+            <link.icon size={14} strokeWidth={1.75} />
+            <span className="sr-only">{link.label}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div
       data-theme={settings.theme}
@@ -163,8 +207,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="mt-auto pt-4 border-t border-void-700">
+        <div className="mt-auto pt-4 border-t border-void-700 flex flex-col gap-1.5">
           {renderProfileCorner()}
+          {renderSocialLinks()}
         </div>
       </aside>
 
@@ -257,8 +302,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 );
               })}
             </nav>
-            <div className="mt-auto pt-4 border-t border-void-700">
+            <div className="mt-auto pt-4 border-t border-void-700 flex flex-col gap-1.5">
               {renderProfileCorner(true)}
+              {renderSocialLinks()}
             </div>
           </aside>
         </div>

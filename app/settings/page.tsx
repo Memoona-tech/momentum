@@ -11,6 +11,9 @@ import {
   ArrowLeftRight,
   Image as ImageIcon,
   Sparkles,
+  Github,
+  Globe,
+  Mail,
 } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { ICONS, IconName, getIcon } from "@/lib/icons";
@@ -727,6 +730,40 @@ export default function SettingsPage() {
           >
             <Trash2 size={15} /> Clear All Data
           </button>
+        </div>
+      </section>
+
+      <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
+        <h2 className="text-sm font-semibold mb-2 text-parchment">About & Developer</h2>
+        <p className="text-xs text-void-400 mb-4 leading-relaxed">
+          Momentum is crafted by Memoona as a private, local-first habit operating system. Connect or view more projects:
+        </p>
+        <div className="flex flex-wrap gap-2.5">
+          <a
+            href="https://github.com/Memoona-tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-void-800 border border-void-600 hover:border-gold-500/50 text-parchment text-xs font-medium rounded-xl px-3.5 py-2.5 transition-colors"
+          >
+            <Github size={14} className="text-gold-400" />
+            GitHub (@Memoona-tech)
+          </a>
+          <a
+            href="https://memoonasaleem.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-void-800 border border-void-600 hover:border-gold-500/50 text-parchment text-xs font-medium rounded-xl px-3.5 py-2.5 transition-colors"
+          >
+            <Globe size={14} className="text-gold-400" />
+            Portfolio (memoonasaleem.vercel.app)
+          </a>
+          <a
+            href="mailto:memoona.se@gmail.com"
+            className="flex items-center gap-2 bg-void-800 border border-void-600 hover:border-gold-500/50 text-parchment text-xs font-medium rounded-xl px-3.5 py-2.5 transition-colors"
+          >
+            <Mail size={14} className="text-gold-400" />
+            Email (memoona.se@gmail.com)
+          </a>
         </div>
       </section>
 
