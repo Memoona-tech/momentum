@@ -18,20 +18,37 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Today", icon: LayoutGrid },
-  { href: "/habits", label: "Habits", icon: Gem },
-  { href: "/streaks", label: "Streaks", icon: Flame },
-  { href: "/analytics", label: "Analytics", icon: LineChart },
-  { href: "/notes", label: "Notes", icon: Feather },
-  { href: "/widgets", label: "Widgets", icon: SquareStack },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/settings", label: "Settings", icon: SettingsIcon },
+  { href: "/", label: "Today", icon: LayoutGrid, matchPrefixes: ["/"] },
+  { href: "/habits", label: "Habits", icon: Gem, matchPrefixes: ["/habits"] },
+  { href: "/streaks", label: "Streaks", icon: Flame, matchPrefixes: ["/streaks"] },
+  {
+    href: "/analytics",
+    label: "Analytics & Reports",
+    icon: LineChart,
+    matchPrefixes: ["/analytics", "/reports"],
+  },
+  { href: "/notes", label: "Notes", icon: Feather, matchPrefixes: ["/notes"] },
+  { href: "/widgets", label: "Widgets", icon: SquareStack, matchPrefixes: ["/widgets"] },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { settings } = useData();
+
+  const profile = settings.profile ?? {
+    name: "Momentum User",
+    avatarUrl: null,
+    dailyNote: "",
+  };
+
+  const initials =
+    (profile.name || "Momentum User")
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "M";
 
   const themeStyles: Record<string, { backgroundImage: string }> = {
     vault: {
@@ -56,6 +73,57 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setMobileOpen(false);
   }, [pathname]);
 
+  const renderProfileCorner = (isMobile = false) => {
+    const isSettingsActive = pathname === "/settings";
+    return (
+      <Link
+        href="/settings"
+        onClick={() => isMobile && setMobileOpen(false)}
+        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all group ${
+          isSettingsActive
+            ? "bg-gold-500/10 border-gold-500/40 text-gold-300"
+            : "border-void-700/60 bg-void-800/40 hover:bg-void-800 hover:border-void-600 text-parchment"
+        }`}
+        title="View profile & settings"
+      >
+        <div className="relative shrink-0">
+          {profile.avatarUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={profile.avatarUrl}
+              alt={profile.name}
+              className="w-9 h-9 rounded-full object-cover border border-void-600 group-hover:border-gold-400/60 transition-colors"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full border border-void-600 group-hover:border-gold-400/60 bg-void-800 flex items-center justify-center text-xs font-semibold text-gold-300 transition-colors">
+              {initials}
+            </div>
+          )}
+          <span
+            className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-void-900"
+            title="Local Vault Active"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold truncate group-hover:text-gold-300 transition-colors">
+            {profile.name || "Momentum User"}
+          </p>
+          <p className="text-[11px] text-void-400 truncate">
+            {profile.dailyNote ? `"${profile.dailyNote}"` : "Settings & Profile"}
+          </p>
+        </div>
+        <SettingsIcon
+          size={16}
+          className={`shrink-0 transition-transform group-hover:rotate-45 ${
+            isSettingsActive
+              ? "text-gold-400"
+              : "text-void-400 group-hover:text-parchment"
+          }`}
+        />
+      </Link>
+    );
+  };
+
   return (
     <div
       data-theme={settings.theme}
@@ -63,7 +131,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       style={themeStyles[settings.theme] ?? themeStyles.vault}
     >
       <aside className="hidden md:flex md:w-64 md:flex-col md:sticky md:top-0 md:h-screen md:shrink-0 border-r border-void-700 bg-void-900/60 px-5 py-7 overflow-y-auto">
-        <div className="flex items-center gap-2.5 px-1 mb-10">
+        <div className="flex items-center gap-2.5 px-1 mb-8">
           <div className="w-8 h-8 rounded-full border border-gold-500/50 flex items-center justify-center">
             <Gem className="text-gold-400" size={15} />
           </div>
@@ -71,9 +139,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             Momentum
           </span>
         </div>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 mb-6">
           {NAV_ITEMS.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : item.matchPrefixes?.some(
+                    (p) => pathname === p || pathname.startsWith(p + "/"),
+                  ) ?? pathname === item.href;
             return (
               <Link
                 key={item.href}
@@ -90,10 +163,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="mt-auto pt-5 border-t border-void-700">
-          <p className="text-[11px] text-void-400 px-1 leading-relaxed">
-            Stored on this device only. Export a backup from Reports any time.
-          </p>
+        <div className="mt-auto pt-4 border-t border-void-700">
+          {renderProfileCorner()}
         </div>
       </aside>
 
@@ -104,14 +175,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="font-display text-base tracking-wide">Momentum</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setMobileOpen((open) => !open)}
-          className="p-2 rounded-lg bg-void-800 border border-void-600 text-parchment"
-          aria-label="Toggle navigation"
-        >
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/settings"
+            className="flex items-center p-0.5 rounded-full border border-void-700 hover:border-gold-500/50 transition-colors"
+            title="Profile & Settings"
+          >
+            {profile.avatarUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={profile.avatarUrl}
+                alt={profile.name}
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-void-800 flex items-center justify-center text-[10px] font-semibold text-gold-300">
+                {initials}
+              </div>
+            )}
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="p-2 rounded-lg bg-void-800 border border-void-600 text-parchment"
+            aria-label="Toggle navigation"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </header>
 
       {mobileOpen && (
@@ -122,7 +213,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             className="absolute inset-0 bg-void-950/70"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-72 max-w-[82vw] border-r border-void-700 bg-void-900 px-4 py-5">
+          <aside className="absolute left-0 top-0 h-full w-72 max-w-[82vw] border-r border-void-700 bg-void-900 px-4 py-5 flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-full border border-gold-500/50 flex items-center justify-center">
@@ -141,9 +232,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <X size={18} />
               </button>
             </div>
-            <nav className="flex flex-col gap-1">
+            <nav className="flex flex-col gap-1 mb-6">
               {NAV_ITEMS.map((item) => {
-                const active = pathname === item.href;
+                const active =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : item.matchPrefixes?.some(
+                        (p) => pathname === p || pathname.startsWith(p + "/"),
+                      ) ?? pathname === item.href;
                 return (
                   <Link
                     key={item.href}
@@ -161,6 +257,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 );
               })}
             </nav>
+            <div className="mt-auto pt-4 border-t border-void-700">
+              {renderProfileCorner(true)}
+            </div>
           </aside>
         </div>
       )}

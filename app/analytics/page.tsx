@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   LineChart,
   Line,
@@ -24,7 +25,7 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { Flame, Trophy } from "lucide-react";
+import { Flame, Trophy, FileText } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import {
   isScheduledOn,
@@ -156,18 +157,29 @@ export default function AnalyticsPage() {
             Overall completion rate over time
           </p>
         </div>
-        <div className="flex gap-1 bg-void-800 rounded-lg p-1">
-          {(["week", "month", "year"] as Range[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
-                range === r ? "bg-void-700 text-gold-300" : "text-void-400"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/reports"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-void-700 bg-void-800 hover:border-gold-500/40 text-xs font-medium text-void-300 hover:text-gold-300 transition-colors"
+            title="Export detailed PDF or CSV reports"
+          >
+            <FileText size={13} className="text-gold-400" />
+            <span className="hidden sm:inline">PDF & Reports</span>
+            <span className="sm:hidden">Reports</span>
+          </Link>
+          <div className="flex gap-1 bg-void-800 rounded-lg p-1">
+            {(["week", "month", "year"] as Range[]).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+                  range === r ? "bg-void-700 text-gold-300" : "text-void-400"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

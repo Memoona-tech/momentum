@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import { format, eachDayOfInterval, subWeeks, startOfWeek, endOfWeek, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { Download, FileDown, TrendingUp, TrendingDown } from "lucide-react";
+import { Download, FileDown, TrendingUp, TrendingDown, LineChart } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { isScheduledOn, dateStr, currentStreak } from "@/lib/schedule";
 import { Habit, HabitLog } from "@/lib/types";
@@ -148,18 +149,29 @@ export default function ReportsPage() {
           <h1 className="font-display text-3xl text-parchment mb-1">Reports</h1>
           <p className="text-void-400 text-sm">{currentRange}</p>
         </div>
-        <div className="flex gap-1 bg-void-800 rounded-lg p-1">
-          {(["week", "month"] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
-                period === p ? "bg-void-700 text-gold-300" : "text-void-400"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/analytics"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-void-700 bg-void-800 hover:border-gold-500/40 text-xs font-medium text-void-300 hover:text-gold-300 transition-colors"
+            title="Interactive charts and completion trends"
+          >
+            <LineChart size={13} className="text-gold-400" />
+            <span className="hidden sm:inline">Interactive Analytics</span>
+            <span className="sm:hidden">Analytics</span>
+          </Link>
+          <div className="flex gap-1 bg-void-800 rounded-lg p-1">
+            {(["week", "month"] as Period[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+                  period === p ? "bg-void-700 text-gold-300" : "text-void-400"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
