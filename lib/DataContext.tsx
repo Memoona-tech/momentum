@@ -9,7 +9,7 @@ import React, {
   useCallback,
 } from "react";
 import { AppData, Category, Habit, HabitLog, Settings } from "./types";
-import { loadData, saveData, newId } from "./storage";
+import { loadData, saveData, newId, DEFAULT_CATEGORIES } from "./storage";
 import { getUnlockedMilestones } from "./schedule";
 import { mergeAppData, MergeOptions, MergeResult } from "./sync";
 
@@ -26,6 +26,7 @@ interface DataContextValue {
   createCategory: (c: Partial<Category>) => void;
   updateCategory: (id: string, c: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
+  restoreDefaultCategories: () => void;
   setLog: (
     habitId: string,
     date: string,
@@ -156,6 +157,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  function restoreDefaultCategories() {
+    if (!data) return;
+    const existingNames = new Set(
+      data.categories.map((c) => c.name.trim().toLowerCase()),
+    );
+    const missing = DEFAULT_CATEGORIES.filter(
+      (c) => !existingNames.has(c.name.trim().toLowerCase()),
+    );
+    const nextCategories = [...data.categories, ...missing];
+    persist({
+      ...data,
+      categories: nextCategories.length > 0 ? nextCategories : DEFAULT_CATEGORIES,
+    });
+  }
+
   function setLog(
     habitId: string,
     date: string,
@@ -255,6 +271,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         createCategory,
         updateCategory,
         deleteCategory,
+        restoreDefaultCategories,
         setLog,
         unsetLog,
         updateSettings,

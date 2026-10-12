@@ -41,6 +41,7 @@ export default function SettingsPage() {
     categories,
     createCategory,
     deleteCategory,
+    restoreDefaultCategories,
     habits,
     logs,
     settings,
@@ -505,9 +506,26 @@ export default function SettingsPage() {
       </section>
 
       <section className="bg-void-900/60 border border-void-700 rounded-2xl p-5">
-        <h2 className="text-sm font-semibold mb-4 text-parchment">
-          Categories
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-parchment">
+            Categories
+          </h2>
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                confirm(
+                  "Restore default categories (Health, Gym, Books Reading, Eat Healthy, Water, Job, Early Riser, Screen Time, Zikr, etc.)?",
+                )
+              ) {
+                restoreDefaultCategories();
+              }
+            }}
+            className="text-xs text-gold-400 hover:text-gold-300 font-medium transition-colors"
+          >
+            Restore Defaults
+          </button>
+        </div>
         <div className="flex flex-col gap-2 mb-4">
           {categories.map((c) => {
             const Icon = getIcon(c.icon);
