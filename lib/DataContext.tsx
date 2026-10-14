@@ -187,10 +187,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       habitId,
       date,
       completed,
-      value: value ?? null,
-      durationMinutes: durationMinutes ?? null,
-      note: note ?? null,
-      loggedAt: new Date().toISOString(),
+      value: value !== undefined ? value : (existing?.value ?? null),
+      durationMinutes: durationMinutes !== undefined ? durationMinutes : (existing?.durationMinutes ?? null),
+      note: note !== undefined ? note : (existing?.note ?? null),
+      loggedAt:
+        existing?.completed && completed && existing.loggedAt
+          ? existing.loggedAt
+          : new Date().toISOString(),
     };
     const logs = existing
       ? data!.logs.map((l) =>

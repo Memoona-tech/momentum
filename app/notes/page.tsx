@@ -42,19 +42,39 @@ export default function NotesPage() {
     const habitId = expandedHabitId;
     if (!habitId) return;
 
+    const existingLog = logs.find(
+      (l) => l.habitId === habitId && l.date === editingLogDate,
+    );
+
     setLog(
       habitId,
       editingLogDate,
-      true,
+      existingLog?.completed ?? false,
       editingValue ? Number(editingValue) : null,
       editingNote || null,
+      existingLog?.durationMinutes,
     );
     setEditingLogDate(null);
   }
 
   function handleDeleteNote(habitId: string, logDate: string) {
     if (confirm("Remove this note?")) {
-      unsetLog(habitId, logDate);
+      const existingLog = logs.find(
+        (l) => l.habitId === habitId && l.date === logDate,
+      );
+      if (existingLog && existingLog.completed) {
+        // Keep habit completed, only remove the note
+        setLog(
+          habitId,
+          logDate,
+          true,
+          existingLog.value,
+          null,
+          existingLog.durationMinutes,
+        );
+      } else {
+        unsetLog(habitId, logDate);
+      }
     }
   }
 
@@ -142,6 +162,11 @@ export default function NotesPage() {
                           <div className="flex-1">
                             <p className="text-xs font-medium text-void-400 mb-0.5">
                               {format(parseISO(log.date), "MMM d, yyyy")}
+                              {log.loggedAt && (
+                                <span className="text-void-400 font-mono ml-1.5">
+                                  · {format(new Date(log.loggedAt), "h:mm a")}
+                                </span>
+                              )}
                             </p>
                             <p className="text-sm text-parchment">{log.note}</p>
                             {log.value != null && habit.targetUnit && (

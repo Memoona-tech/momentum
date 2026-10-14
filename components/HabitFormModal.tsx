@@ -97,14 +97,14 @@ export default function HabitFormModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-void-400 mb-1.5">
-            Description
+          <label className="block text-xs font-medium text-void-300 mb-1.5">
+            Description <span className="text-void-400 font-normal">(shown directly under the habit name)</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            placeholder="Optional details"
+            placeholder="e.g. Read 20 pages, solve 2 LeetCode questions, or stretch..."
             className={inputCls}
           />
         </div>

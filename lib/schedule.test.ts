@@ -159,4 +159,36 @@ describe("getThemeUnlocks", () => {
     expect(result.find((theme) => theme.id === "ember")?.unlocked).toBe(true);
     expect(result.find((theme) => theme.id === "vault")?.unlocked).toBe(true);
   });
+
+  it("unlocks spark at 3 days and ember at 5 days, while keeping 30+ day themes locked", () => {
+    const habit: Habit = {
+      ...baseHabit,
+      milestones: [7, 30, 100],
+      achievedMilestones: [],
+    };
+
+    // 5-day streak
+    const logs: HabitLog[] = Array.from({ length: 5 }, (_, index) => ({
+      habitId: "habit-1",
+      date: format(addDays(new Date(), -(index + 1)), "yyyy-MM-dd"),
+      completed: true,
+      value: null,
+      durationMinutes: null,
+      note: null,
+      loggedAt: new Date().toISOString(),
+    }));
+
+    const result = getThemeUnlocks([habit], logs, ["vault"]);
+
+    // Spark (3d) and Ember (5d) should be unlocked
+    expect(result.find((theme) => theme.id === "spark")?.unlocked).toBe(true);
+    expect(result.find((theme) => theme.id === "ember")?.unlocked).toBe(true);
+
+    // Forest (10d), Ocean (15d), Midnight (30d), Crimson (50d), Aurora (100d) should be locked
+    expect(result.find((theme) => theme.id === "forest")?.unlocked).toBe(false);
+    expect(result.find((theme) => theme.id === "ocean")?.unlocked).toBe(false);
+    expect(result.find((theme) => theme.id === "midnight")?.unlocked).toBe(false);
+    expect(result.find((theme) => theme.id === "crimson")?.unlocked).toBe(false);
+    expect(result.find((theme) => theme.id === "aurora")?.unlocked).toBe(false);
+  });
 });

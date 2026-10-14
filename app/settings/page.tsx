@@ -390,16 +390,22 @@ export default function SettingsPage() {
               }}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-parchment">
+                <span className="text-sm font-medium text-parchment flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: theme.accentColor }}
+                  />
                   {theme.name}
                 </span>
                 {theme.unlocked ? (
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-gold-300">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-gold-300 font-semibold">
                     unlocked
                   </span>
                 ) : (
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-void-400">
-                    {theme.threshold} badges
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-void-400 font-mono">
+                    {theme.streakThreshold
+                      ? `${theme.streakThreshold}d streak`
+                      : `${theme.threshold} badges`}
                   </span>
                 )}
               </div>

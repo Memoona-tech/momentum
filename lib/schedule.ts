@@ -22,6 +22,7 @@ export interface ThemeUnlockOption {
   description: string;
   accentColor: string;
   threshold: number;
+  streakThreshold?: number;
   unlocked: boolean;
 }
 
@@ -32,27 +33,63 @@ export const MILESTONE_THEME_UNLOCKS: Omit<ThemeUnlockOption, "unlocked">[] = [
     description: "The original brass-and-void look.",
     accentColor: "#c9a44c",
     threshold: 0,
+    streakThreshold: 0,
+  },
+  {
+    id: "spark",
+    name: "Spark",
+    description: "Warm amber glow for building early momentum.",
+    accentColor: "#eab308",
+    threshold: 0,
+    streakThreshold: 3,
   },
   {
     id: "ember",
     name: "Ember",
-    description: "Warm copper glow for your first streak badge.",
+    description: "Vibrant copper flare for locking in your 5-day streak cadence.",
     accentColor: "#f97316",
     threshold: 1,
+    streakThreshold: 5,
   },
   {
     id: "forest",
     name: "Forest",
-    description: "A calmer green arc for deeper streaks.",
-    accentColor: "#3f8a73",
+    description: "Tranquil emerald arc for double-digit 10-day consistency.",
+    accentColor: "#10b981",
+    threshold: 2,
+    streakThreshold: 10,
+  },
+  {
+    id: "ocean",
+    name: "Ocean",
+    description: "Deep sea azure tide for reaching a 15-day streak.",
+    accentColor: "#06b6d4",
     threshold: 3,
+    streakThreshold: 15,
   },
   {
     id: "midnight",
     name: "Midnight",
-    description: "A cooler slate finish after bigger wins.",
+    description: "Regal violet slate finish for month-long dedication.",
     accentColor: "#8b5cf6",
+    threshold: 4,
+    streakThreshold: 30,
+  },
+  {
+    id: "crimson",
+    name: "Crimson",
+    description: "Blazing ruby aura for 50 days of unwavering discipline.",
+    accentColor: "#ef4444",
+    threshold: 5,
+    streakThreshold: 50,
+  },
+  {
+    id: "aurora",
+    name: "Aurora",
+    description: "Cosmic prismatic radiance for achieving a 100-day century streak.",
+    accentColor: "#ec4899",
     threshold: 6,
+    streakThreshold: 100,
   },
 ];
 
@@ -207,13 +244,36 @@ export function getThemeUnlocks(
     habits,
     logs,
   ).length;
-  return MILESTONE_THEME_UNLOCKS.map((theme) => ({
-    ...theme,
-    unlocked:
-      theme.id === "vault" ||
-      unlockedThemeIds.includes(theme.id) ||
-      totalAchievements >= theme.threshold,
-  }));
+
+  const maxStreak =
+    habits.length > 0
+      ? Math.max(
+          0,
+          ...habits.map((h) =>
+            Math.max(currentStreak(h, logs), longestStreak(h, logs)),
+          ),
+        )
+      : 0;
+
+  return MILESTONE_THEME_UNLOCKS.map((theme) => {
+    const isDefault = theme.id === "vault";
+    const isExplicitlyUnlocked = unlockedThemeIds.includes(theme.id);
+    const meetsBadgeThreshold =
+      theme.threshold > 0 && totalAchievements >= theme.threshold;
+    const meetsStreakThreshold =
+      theme.streakThreshold !== undefined &&
+      theme.streakThreshold > 0 &&
+      maxStreak >= theme.streakThreshold;
+
+    return {
+      ...theme,
+      unlocked:
+        isDefault ||
+        isExplicitlyUnlocked ||
+        meetsBadgeThreshold ||
+        meetsStreakThreshold,
+    };
+  });
 }
 
 export function nextMilestoneProgress(

@@ -40,7 +40,6 @@ const SOCIAL_LINKS = [
 
 const NAV_ITEMS = [
   { href: "/", label: "Today", icon: LayoutGrid, matchPrefixes: ["/"] },
-  { href: "/habits", label: "Habits", icon: Gem, matchPrefixes: ["/habits"] },
   { href: "/streaks", label: "Streaks", icon: Flame, matchPrefixes: ["/streaks"] },
   {
     href: "/analytics",
@@ -76,17 +75,33 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       backgroundImage:
         "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
     },
+    spark: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(234,179,8,0.18), transparent 35%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
+    },
     ember: {
       backgroundImage:
         "radial-gradient(circle at top left, rgba(249,115,22,0.18), transparent 35%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
     },
     forest: {
       backgroundImage:
-        "radial-gradient(circle at top left, rgba(63,138,115,0.16), transparent 30%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+        "radial-gradient(circle at top left, rgba(16,185,129,0.16), transparent 30%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+    },
+    ocean: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(6,182,212,0.16), transparent 32%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
     },
     midnight: {
       backgroundImage:
-        "radial-gradient(circle at top left, rgba(139,92,246,0.14), transparent 30%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+        "radial-gradient(circle at top left, rgba(139,92,246,0.16), transparent 32%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)",
+    },
+    crimson: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(239,68,68,0.18), transparent 35%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
+    },
+    aurora: {
+      backgroundImage:
+        "radial-gradient(circle at top left, rgba(236,72,153,0.16), transparent 32%), radial-gradient(circle at bottom right, rgba(139,92,246,0.12), transparent 40%), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)",
     },
   };
 

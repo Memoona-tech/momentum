@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "grouped" | "list">("grid");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed" | "archived">("all");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -87,6 +87,11 @@ export default function DashboardPage() {
     [habits],
   );
 
+  const archivedHabits = useMemo(
+    () => habits.filter((h) => h.archived),
+    [habits],
+  );
+
   const logsByHabit = useMemo(() => {
     const map = new Map<string, (typeof logs)[number]>();
     logs.forEach((l) => {
@@ -102,12 +107,18 @@ export default function DashboardPage() {
     ? (completedCount / todaysHabits.length) * 100
     : 0;
 
+  const currentDisplayHabits = statusFilter === "archived" ? archivedHabits : todaysHabits;
+
   const filteredHabits = useMemo(() => {
-    return todaysHabits.filter((habit) => {
+    return currentDisplayHabits.filter((habit) => {
       if (query.trim()) {
         const q = query.trim().toLowerCase();
         const haystack = `${habit.name} ${habit.description ?? ""}`.toLowerCase();
         if (!haystack.includes(q)) return false;
+      }
+      if (statusFilter === "archived") {
+        if (selectedCategory && habit.categoryId !== selectedCategory) return false;
+        return true;
       }
       const isDone = !!logsByHabit.get(habit.id)?.completed;
       if (statusFilter === "pending" && isDone) return false;
@@ -115,7 +126,7 @@ export default function DashboardPage() {
       if (selectedCategory && habit.categoryId !== selectedCategory) return false;
       return true;
     });
-  }, [query, todaysHabits, statusFilter, selectedCategory, logsByHabit]);
+  }, [query, currentDisplayHabits, statusFilter, selectedCategory, logsByHabit]);
 
   const categoriesWithHabits = useMemo(() => {
     return categories
@@ -441,6 +452,19 @@ export default function DashboardPage() {
             >
               Done ({completedCount})
             </button>
+            {archivedHabits.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setStatusFilter("archived")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === "archived"
+                    ? "bg-amber-500/20 text-amber-300 font-semibold"
+                    : "text-void-400 hover:text-parchment"
+                }`}
+              >
+                Archived ({archivedHabits.length})
+              </button>
+            )}
           </div>
 
           {/* View Mode Toggle (Grid / Grouped / List) */}
